@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'main_page.dart';
+import '../main_page.dart';
 class LoginPage extends StatefulWidget{
   final VoidCallback onRegisterTap;
    const LoginPage({super.key,required this.onRegisterTap});
