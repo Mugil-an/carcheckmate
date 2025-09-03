@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
-
+ 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -13,7 +13,7 @@ class MainPage extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
         if (!snapshot.hasData) {
-          return const Center(child: Text('Please log in.'));
+          return const Center(child: Text('Already register,Please log in.'));
         }
         final user = snapshot.data!;
         return Scaffold(

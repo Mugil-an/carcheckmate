@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_google_auth_demo/services/auth_service.dart';
 import '../main_page.dart';
 class RegisterPage extends StatefulWidget {
   final VoidCallback onLoginTap;
@@ -11,15 +12,12 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage>{
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-
+  final authService = AuthService();
   String? errorMessage;
 
   Future<void> register() async{
     try{
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email:emailController.text.trim(),
-        password:passwordController.text.trim()
-      );
+      authService.register(emailController.text.trim(), passwordController.text.trim());
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const MainPage()),
       );

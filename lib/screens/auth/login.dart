@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../main_page.dart';
+import '../../services/auth_service.dart';
 class LoginPage extends StatefulWidget{
   final VoidCallback onRegisterTap;
    const LoginPage({super.key,required this.onRegisterTap});
@@ -12,19 +12,19 @@ class _LoginPageState extends State<LoginPage>{
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   String? errorMessage;
-
-  Future<void> login() async{
-    try{
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text.trim(), 
-        password: passwordController.text.trim()
+  final authService = AuthService();
+   Future<void> login() async {
+    try {
+      await authService.login(
+        emailController.text.trim(),
+        passwordController.text.trim(),
       );
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const MainPage()),
       );
-    } on FirebaseAuthException catch(e){
-      setState((){
-        errorMessage = e.message;
+    } catch (e) {
+      setState(() {
+        errorMessage = e.toString();
       });
     }
   }
