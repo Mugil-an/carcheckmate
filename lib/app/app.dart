@@ -1,0 +1,15 @@
+import 'package:flutter/material.dart';
+import 'router.dart';
+import 'theme.dart';
+
+class App extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: "Auth App",
+      theme: appTheme, // from theme.dart
+      initialRoute: '/login',
+      onGenerateRoute: AppRouter.generateRoute,
+    );
+  }
+}

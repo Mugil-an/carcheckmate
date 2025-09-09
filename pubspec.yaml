@@ -6,15 +6,22 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^3.4.1
-  firebase_auth: ^5.3.1
+  flutter_bloc: ^9.1.1
+  firebase_core: ^4.1.0
+  firebase_auth: ^6.0.2
   google_sign_in: ^6.3.0
-  firebase_ui_auth: ^2.0.0
-  firebase_ui_oauth_google: ^1.4.3
-
-flutter_svg: ^2.0.10+1
+  firebase_ui_auth: ^3.0.0
+  firebase_ui_oauth_google: ^2.0.0
+  google_mlkit_text_recognition: ^0.15.0
+  tesseract_ocr: ^0.5.0
+  image_picker: ^1.0.7
+  flutter_svg: ^2.0.10+1
+  get_it: ^8.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
+flutter:
+  assets:
+    - assets/images/
