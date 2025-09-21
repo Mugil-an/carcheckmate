@@ -8,6 +8,8 @@ class LoginScreen extends StatelessWidget {
   final TextEditingController emailCtrl = TextEditingController();
   final TextEditingController passCtrl = TextEditingController();
 
+  LoginScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,12 +32,19 @@ class LoginScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                TextField(controller: emailCtrl, decoration: InputDecoration(labelText: "Email")),
-                TextField(controller: passCtrl, decoration: InputDecoration(labelText: "Password"), obscureText: true),
+                TextField(
+                    controller: emailCtrl,
+                    decoration: InputDecoration(labelText: "Email")),
+                TextField(
+                    controller: passCtrl,
+                    decoration: InputDecoration(labelText: "Password"),
+                    obscureText: true),
                 SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {
-                    context.read<AuthBloc>().add(AuthSignIn(emailCtrl.text, passCtrl.text));
+                    context
+                        .read<AuthBloc>()
+                        .add(AuthSignIn(emailCtrl.text, passCtrl.text));
                   },
                   child: Text("Login"),
                 ),

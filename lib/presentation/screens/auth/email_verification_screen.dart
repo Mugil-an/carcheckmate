@@ -4,6 +4,8 @@ import '../../../logic/auth/auth_bloc.dart';
 import '../../../logic/auth/auth_event.dart';
 
 class EmailVerificationScreen extends StatelessWidget {
+  const EmailVerificationScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,7 +23,8 @@ class EmailVerificationScreen extends StatelessWidget {
               child: Text("Resend Verification"),
             ),
             TextButton(
-              onPressed: () => Navigator.pushReplacementNamed(context, "/login"),
+              onPressed: () =>
+                  Navigator.pushReplacementNamed(context, "/login"),
               child: Text("Back to Login"),
             ),
           ],

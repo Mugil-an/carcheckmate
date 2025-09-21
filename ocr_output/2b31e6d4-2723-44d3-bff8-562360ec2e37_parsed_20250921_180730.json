@@ -1,0 +1,41 @@
+{
+  "file": "2b31e6d4-2723-44d3-bff8-562360ec2e37.png",
+  "parsed_events_count": 1,
+  "events": [
+    {
+      "service_date": "01/01/05",
+      "odometer": "26,000",
+      "invoice_no": null,
+      "total_amount": null,
+      "garage": "TOTAL SERVICE COST: $819.00 OWNER NAME: Adam Smith Ka",
+      "parts": [
+        "FORPERIOD: 01/05 VEHICLE MAKE:",
+        "MILEAGE"
+      ],
+      "parts_amounts": [
+        "2013",
+        "26000"
+      ],
+      "raw_block_text": "TOTAL SERVICE COST: $819.00 OWNER NAME: Adam Smith Ka FORPERIOD: 01/05 VEHICLE MAKE: 2013 YEAR: DATE 01/01/05 MILEAGE 26,000 SERVICE COST OF SERVICE Change oil",
+      "page_index": 1
+    }
+  ],
+  "owners": [
+    "NAME"
+  ],
+  "unique_owner_count": 1,
+  "missing_periods": {
+    "gaps": []
+  },
+  "odometer_issues": {
+    "rollback": false,
+    "decreases": [],
+    "odo_list": [
+      26000
+    ]
+  },
+  "unauthorized_garages": [
+    "TOTAL SERVICE COST: $819.00 OWNER NAME: Adam Smith Ka"
+  ],
+  "raw_text": "Vehicle Service Record\n\nTOTAL SERVICE COST: $819.00 OWNER NAME: Adam Smith Ka\n\nFORPERIOD: 01/05 VEHICLE MAKE: 2013\nYEAR:\nDATE 01/01/05\nMILEAGE 26,000\n\nSERVICE COST OF SERVICE\n\nChange oil\nLubricate chassis\nChange oil filter 5,00\nChange transmission fluid $35.00\n\nFlush cooling system 19.00 233.00 23.00\nAdd antifreeze 23,00 19.00 | 23,00 | 39.00\n\nAlign wheels 19.00 25.00 6.00 | 6.00\nRotate tires 19.00 233.00 | 23.00 | 23.00\n\n19,00 233.00 | 23.00 | 23.00\n\n"
+}

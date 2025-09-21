@@ -4,6 +4,8 @@ import '../../../logic/auth/auth_bloc.dart';
 import '../../../logic/auth/auth_event.dart';
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -6,6 +6,8 @@ import '../../../logic/auth/auth_event.dart';
 class ForgotPasswordScreen extends StatelessWidget {
   final TextEditingController emailCtrl = TextEditingController();
 
+  ForgotPasswordScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,11 +16,15 @@ class ForgotPasswordScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(controller: emailCtrl, decoration: InputDecoration(labelText: "Enter your email")),
+            TextField(
+                controller: emailCtrl,
+                decoration: InputDecoration(labelText: "Enter your email")),
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                context.read<AuthBloc>().add(AuthForgotPassword(emailCtrl.text));
+                context
+                    .read<AuthBloc>()
+                    .add(AuthForgotPassword(emailCtrl.text));
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("Password reset email sent")),
                 );
