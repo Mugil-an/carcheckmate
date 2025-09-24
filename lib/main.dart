@@ -10,10 +10,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(); // make sure Firebase is set up properly
   init(); // setup dependency injection
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -22,7 +24,7 @@ class MyApp extends StatelessWidget {
           create: (_) => sl<AuthBloc>(), // inject AuthBloc
         ),
       ],
-      child: App(), // comes from app/app.dart
+      child: const App(), // comes from app/app.dart
     );
   }
 }

@@ -1,9 +1,9 @@
 abstract class AuthEvent {}
 
-class AuthSignIn extends AuthEvent {
+class AuthLogin extends AuthEvent {
   final String email;
   final String password;
-  AuthSignIn(this.email, this.password);
+  AuthLogin(this.email, this.password);
 }
 
 class AuthRegister extends AuthEvent {
@@ -14,9 +14,11 @@ class AuthRegister extends AuthEvent {
 
 class AuthSendVerification extends AuthEvent {}
 
+class AuthCheckVerified extends AuthEvent {}
+
 class AuthForgotPassword extends AuthEvent {
   final String email;
   AuthForgotPassword(this.email);
 }
 
-class AuthSignOut extends AuthEvent {}
+class AuthLogout extends AuthEvent {}

@@ -8,10 +8,11 @@ class RegisterScreen extends StatelessWidget {
   final TextEditingController emailCtrl = TextEditingController();
   final TextEditingController passCtrl = TextEditingController();
 
+  RegisterScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Register")),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
@@ -21,24 +22,98 @@ class RegisterScreen extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          if (state is AuthLoading) return Center(child: CircularProgressIndicator());
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                TextField(controller: emailCtrl, decoration: InputDecoration(labelText: "Email")),
-                TextField(controller: passCtrl, decoration: InputDecoration(labelText: "Password"), obscureText: true),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    context.read<AuthBloc>().add(AuthRegister(emailCtrl.text, passCtrl.text));
-                  },
-                  child: Text("Register"),
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue.shade200, Colors.blue.shade800],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/images/carcheckmate_logo.png',
+                      height: 150,
+                      semanticLabel: 'CarCheckMate Logo',
+                    ),
+                    SizedBox(height: 40),
+                    _buildTextField(emailCtrl, "Email", false),
+                    SizedBox(height: 20),
+                    _buildTextField(passCtrl, "Password", true),
+                    SizedBox(height: 30),
+                    if (state is AuthLoading)
+                      CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
+                    else
+                      _buildRegisterButton(context),
+                    SizedBox(height: 20),
+                    _buildLoginButton(context),
+                  ],
                 ),
-              ],
+              ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, bool obscureText) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      style: TextStyle(color: Colors.blue.shade800),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.blue.shade800),
+        filled: true,
+        fillColor: Colors.white.withAlpha(204),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: BorderSide(color: Colors.white, width: 2),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRegisterButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
+          context.read<AuthBloc>().add(AuthRegister(emailCtrl.text, passCtrl.text));
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+        ),
+        child: Text(
+          "Register",
+          style: TextStyle(fontSize: 18, color: Colors.blue.shade800),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton(BuildContext context) {
+    return TextButton(
+      onPressed: () {
+        Navigator.pushReplacementNamed(context, "/login");
+      },
+      child: Text(
+        "Already have an account? Login",
+        style: TextStyle(color: Colors.white),
       ),
     );
   }

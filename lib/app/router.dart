@@ -14,7 +14,7 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => RegisterScreen());
       case '/verify':
         return MaterialPageRoute(builder: (_) => EmailVerificationScreen());
-      case '/forgot':
+      case '/forgot-password':
         return MaterialPageRoute(builder: (_) => ForgotPasswordScreen());
       case '/home':
         return MaterialPageRoute(builder: (_) => HomeScreen());

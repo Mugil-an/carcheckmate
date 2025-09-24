@@ -4,6 +4,8 @@ import '../../../logic/auth/auth_bloc.dart';
 import '../../../logic/auth/auth_event.dart';
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,7 +15,7 @@ class HomeScreen extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () {
-              context.read<AuthBloc>().add(AuthSignOut());
+              context.read<AuthBloc>().add(AuthLogout());
               Navigator.pushReplacementNamed(context, "/login");
             },
           ),
@@ -27,4 +29,5 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+  
 }

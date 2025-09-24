@@ -7,12 +7,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _repository;
 
   AuthBloc(this._repository) : super(AuthInitial()) {
-    on<AuthSignIn>((event, emit) async {
+    on<AuthLogin>((event, emit) async {
       emit(AuthLoading());
       try {
         final user = await _repository.signIn(event.email, event.password);
         if (user != null) {
-          emit(Authenticated(user));
+          if (user.emailVerified) {
+            emit(Authenticated(user));
+          } else {
+            emit(Unauthenticated());
+            add(AuthSendVerification());
+          }
         } else {
           emit(AuthError("Login failed"));
         }
@@ -26,6 +31,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       try {
         final user = await _repository.register(event.email, event.password);
         if (user != null) {
+          add(AuthSendVerification());
           emit(Authenticated(user));
         } else {
           emit(AuthError("Registration failed"));
@@ -43,15 +49,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     });
 
-    on<AuthForgotPassword>((event, emit) async {
+    on<AuthCheckVerified>((event, emit) async {
       try {
-        await _repository.sendPasswordResetEmail(event.email);
+        final user = await _repository.reloadUser();
+        if (user != null && user.emailVerified) {
+          emit(Authenticated(user));
+        }
       } catch (e) {
         emit(AuthError(e.toString()));
       }
     });
 
-    on<AuthSignOut>((event, emit) async {
+    on<AuthForgotPassword>((event, emit) async {
+      emit(AuthLoading());
+      try {
+        await _repository.sendPasswordResetEmail(event.email);
+        emit(AuthForgotPasswordSuccess());
+      } catch (e) {
+        emit(AuthError(e.toString()));
+      }
+    });
+
+    on<AuthLogout>((event, emit) async {
       await _repository.signOut();
       emit(Unauthenticated());
     });
