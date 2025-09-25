@@ -4,6 +4,7 @@ import '../presentation/screens/auth/register_screen.dart';
 import '../presentation/screens/auth/email_verification_screen.dart';
 import '../presentation/screens/auth/forgot_password_screen.dart';
 import '../presentation/screens/home/home_screen.dart';
+import '../presentation/screens/fraud_awareness_screen.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -18,6 +19,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => ForgotPasswordScreen());
       case '/home':
         return MaterialPageRoute(builder: (_) => HomeScreen());
+      case '/fraud-awareness': // ✅ new route added
+        return MaterialPageRoute(builder: (_) => FraudAwarenessScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

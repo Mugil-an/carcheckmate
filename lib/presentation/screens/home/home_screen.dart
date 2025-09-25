@@ -10,24 +10,46 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Home"),
+        title: const Text("Home"),
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.logout),
             onPressed: () {
+              // 1. Dispatch the logout event to the AuthBloc
               context.read<AuthBloc>().add(AuthLogout());
-              Navigator.pushReplacementNamed(context, "/login");
+              // 2. Navigate to the login screen and clear the navigation stack
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (Route<dynamic> route) => false,
+              );
             },
           ),
         ],
       ),
       body: Center(
-        child: Text(
-          "Welcome to Home Page 🎉",
-          style: Theme.of(context).textTheme.headlineMedium,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "Welcome to Home Page 🎉",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            // Button to navigate to the Fraud Awareness page
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to the fraud awareness screen
+                Navigator.pushNamed(context, '/fraud-awareness');
+              },
+              child: const Text(
+                'Go to Fraud Awareness',
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-  
 }
