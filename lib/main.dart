@@ -1,15 +1,17 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'core/di/service_locator.dart' as di;
 import 'app/app.dart';
-import 'injection.dart';
 import 'logic/auth/auth_bloc.dart';
+import 'logic/checklist/checklist_bloc.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // make sure Firebase is set up properly
-  init(); // setup dependency injection
+  await Firebase.initializeApp();
+  await di.configureDependencies();
   runApp(const MyApp());
 }
 
@@ -20,11 +22,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AuthBloc>(
-          create: (_) => sl<AuthBloc>(), // inject AuthBloc
-        ),
+        BlocProvider<AuthBloc>(create: (_) => di.sl<AuthBloc>()),
+        BlocProvider<ChecklistBloc>(create: (_) => di.sl<ChecklistBloc>()),
       ],
-      child: const App(), // comes from app/app.dart
+      child: const App(),
     );
   }
 }
