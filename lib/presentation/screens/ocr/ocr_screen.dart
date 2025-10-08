@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import '../../widgets/common_background.dart';
 import '../../../core/services/ocr_service.dart';
+import '../../../app/theme.dart';
 
 class OCRScreen extends StatefulWidget {
   const OCRScreen({super.key});
@@ -41,9 +42,7 @@ class _OCRScreenState extends State<OCRScreen> {
         _isProcessing = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error processing image: $e')),
-        );
+        _showErrorDialog('Image Processing Error', e.toString());
       }
     }
   }
@@ -75,9 +74,7 @@ class _OCRScreenState extends State<OCRScreen> {
         _isProcessing = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error processing PDF: $e')),
-        );
+        _showErrorDialog('PDF Processing Error', e.toString());
       }
     }
   }
@@ -427,5 +424,81 @@ class _OCRScreenState extends State<OCRScreen> {
         ),
       ),
     );
+  }
+
+  void _showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.cardBackground,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: AppColors.borderColor.withOpacity(0.3)),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.error_outline,
+                color: AppColors.error,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: AppColors.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            _getUserFriendlyErrorMessage(message),
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 16,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'OK',
+                style: TextStyle(
+                  color: AppColors.accent,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String _getUserFriendlyErrorMessage(String error) {
+    final lowerError = error.toLowerCase();
+    
+    if (lowerError.contains('no host specified') || lowerError.contains('your_ocr_api_endpoint')) {
+      return 'OCR service is not configured. The app is running in demo mode with sample data. To use real OCR functionality, please configure the API endpoint.';
+    } else if (lowerError.contains('network') || lowerError.contains('connection')) {
+      return 'Network connection error. Please check your internet connection and try again.';
+    } else if (lowerError.contains('permission')) {
+      return 'Permission denied. Please grant camera and storage permissions to use this feature.';
+    } else if (lowerError.contains('file not found') || lowerError.contains('path')) {
+      return 'The selected file could not be found or accessed. Please try selecting the file again.';
+    } else if (lowerError.contains('unsupported') || lowerError.contains('format')) {
+      return 'Unsupported file format. Please select a valid image (JPG, PNG) or PDF file.';
+    } else if (lowerError.contains('timeout')) {
+      return 'Request timed out. Please check your connection and try again.';
+    } else if (lowerError.contains('api')) {
+      return 'OCR service error. Please try again later or contact support if the problem persists.';
+    } else {
+      return 'An error occurred while processing the file. Please try again or select a different file.';
+    }
   }
 }
