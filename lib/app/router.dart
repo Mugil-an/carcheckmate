@@ -6,6 +6,9 @@ import '../presentation/screens/auth/email_verification_screen.dart';
 import '../presentation/screens/auth/forgot_password_screen.dart';
 import '../presentation/screens/home/home_screen.dart';
 import '../presentation/screens/checklist/checklist_screen.dart';
+import '../presentation/screens/car_selection/car_selection_screen.dart';
+import '../presentation/screens/ocr/ocr_screen.dart';
+import '../presentation/screens/rto/rto_screen.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -21,7 +24,18 @@ class AppRouter {
       case '/home':
         return MaterialPageRoute(builder: (_) => const HomeScreen());
       case '/checklist':
+        if (settings.arguments is Map<String, dynamic>) {
+          final car = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(builder: (_) => ChecklistScreen(selectedCar: car));
+        }
+        // allow opening checklist without pre-selected car
         return MaterialPageRoute(builder: (_) => const ChecklistScreen());
+      case '/car_selection':
+        return MaterialPageRoute(builder: (_) => const CarSelectionScreen());
+      case '/ocr':
+        return MaterialPageRoute(builder: (_) => const OCRScreen());
+      case '/rto':
+        return MaterialPageRoute(builder: (_) => const RTOScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

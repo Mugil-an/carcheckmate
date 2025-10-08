@@ -6,33 +6,50 @@ class RiskCalculatorService {
     required List<ChecklistItem> items,
     required Map<String, bool> selections,
   }) {
-    double score = 100.0;
+    if (items.isEmpty) return 0.0;
+    
+    int checkedItems = 0;
+    double totalWeight = 0.0;
+    double checkedWeight = 0.0;
 
     for (var item in items) {
-      if (selections[item.issue] == false) {
-        score -= _calculatePenalty(item);
+      final weight = _calculateWeight(item);
+      totalWeight += weight;
+      
+      if (selections[item.issue] == true) { // If item is checked (problem exists)
+        checkedItems++;
+        checkedWeight += weight;
       }
     }
 
-    return score.clamp(0.0, 100.0);
+    // Calculate percentage based on weighted severity
+    final weightedScore = totalWeight > 0 ? (checkedWeight / totalWeight) * 100 : 0.0;
+    
+    // Ensure minimum progression: each checked item adds at least some risk
+    final baseScore = (checkedItems.toDouble() / items.length) * 100;
+    
+    // Use the higher of weighted score or base score for better progression
+    final finalScore = weightedScore > baseScore ? weightedScore : baseScore;
+    
+    return finalScore.clamp(0.0, 100.0);
   }
 
-  double _calculatePenalty(ChecklistItem item) {
-    final severityValue = _severityToValue(item.severity);
-    final costFactor = item.estimatedCost / 10000;
-    return severityValue + costFactor;
+  double _calculateWeight(ChecklistItem item) {
+    final severityWeight = _severityToWeight(item.severity);
+    final costWeight = (item.estimatedCost / 100000).clamp(0.1, 2.0); // Normalize cost impact
+    return severityWeight * (1.0 + costWeight); // Combine severity and cost
   }
 
-  double _severityToValue(String severity) {
+  double _severityToWeight(String severity) {
     switch (severity.toLowerCase()) {
       case 'high':
-        return 10.0;
+        return 3.0; // High severity items have more weight
       case 'medium':
-        return 5.0;
-      case 'low':
         return 2.0;
+      case 'low':
+        return 1.0;
       default:
-        return 0.0;
+        return 1.0;
     }
   }
 }

@@ -1,97 +1,125 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-class RiskMeter extends StatelessWidget {
-  final double score; // 0..100
+enum RiskLevel { low, medium, high }
 
-  const RiskMeter({super.key, required this.score});
+RiskLevel riskLevelFromScore(double score) {
+  if (score <= 30) return RiskLevel.low;
+  if (score <= 70) return RiskLevel.medium;
+  return RiskLevel.high;
+}
+
+typedef RiskInfo = ({Color color, String label});
+
+/// Animated RiskMeter that matches the visual style from assets/images.
+class RiskMeter extends StatefulWidget {
+  final double score; // 0..100
+  final double size; // width/height
+
+  const RiskMeter({super.key, required this.score, this.size = 200});
 
   @override
+  State<RiskMeter> createState() => _RiskMeterState();
+}
+
+class _RiskMeterState extends State<RiskMeter> {
+  @override
   Widget build(BuildContext context) {
+    // Default to 0.0 (no risk) when score is invalid
+    final score = widget.score.isNaN ? 0.0 : widget.score.clamp(0.0, 100.0);
     final percent = (score / 100).clamp(0.0, 1.0);
+    final riskInfo = _getRiskInfo(score);
 
-    // Theme-based colors
-    final Color safeColor = Colors.blue; // base theme color
-    final Color mediumColor = Colors.orange.shade400;
-    final Color dangerColor = Colors.red.shade400;
-
-    Color color;
-    if (score >= 66) {
-      color = dangerColor;
-    } else if (score >= 33) {
-      color = mediumColor;
-    } else {
-      color = safeColor;
-    }
-
-    return Card(
-      elevation: 4,
-      shadowColor: Colors.blue.withOpacity(0.2),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Vehicle Risk',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade700,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // optional logo above title (images/carcheckmate_logo.png)
+        SizedBox(
+          height: 36,
+          child: Image.asset(
+            'assets/images/carcheckmate_logo.png',
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Vehicle Risk Score',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).textTheme.bodyLarge?.color?.withAlpha(220),
+          ),
+        ),
+        const SizedBox(height: 10),
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.0, end: percent),
+          duration: const Duration(milliseconds: 900),
+          curve: Curves.easeOutCubic,
+          builder: (context, animatedPercent, child) {
+            return Container(
+              width: widget.size,
+              height: widget.size,
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  CustomPaint(
+                    size: Size(widget.size, widget.size),
+                    painter: _RiskMeterPainter(
+                      percentage: animatedPercent,
+                      color: riskInfo.color,
+                    ),
                   ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: 160,
-              height: 160,
-              child: CustomPaint(
-                painter: _RiskMeterPainter(
-                  percentage: percent,
-                  color: color,
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         '${score.toStringAsFixed(0)}%',
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 34,
-                          color: color,
+                          fontSize: widget.size * 0.22,
+                          fontWeight: FontWeight.w800,
+                          color: riskInfo.color,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        _riskLabel(score),
+                        riskInfo.label,
                         style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey[600],
+                          fontSize: widget.size * 0.07,
+                          fontWeight: FontWeight.w600,
+                          color: riskInfo.color.withAlpha(200),
                         ),
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
-            ),
-          ],
+            );
+          },
         ),
-      ),
+      ],
     );
   }
 
-  static String _riskLabel(double score) {
-    if (score >= 66) return "High Risk";
-    if (score >= 33) return "Medium Risk";
-    return "Low Risk";
+  RiskInfo _getRiskInfo(double score) {
+    final level = riskLevelFromScore(score);
+    switch (level) {
+      case RiskLevel.low:
+        return (color: const Color(0xFF27AE60), label: 'Low Risk');
+      case RiskLevel.medium:
+        return (color: const Color(0xFFFFB300), label: 'Medium Risk');
+      case RiskLevel.high:
+        return (color: const Color(0xFFE53935), label: 'High Risk');
+    }
   }
 }
 
 class _RiskMeterPainter extends CustomPainter {
-  final double percentage;
+  final double percentage; // 0..1
   final Color color;
 
   _RiskMeterPainter({required this.percentage, required this.color});
@@ -99,46 +127,84 @@ class _RiskMeterPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-    const strokeWidth = 14.0;
+    final radius = min(size.width, size.height) / 2 - 16;
+    final strokeWidth = size.width * 0.075; // scale with size
     const startAngle = -pi / 2;
-    const sweepAngle = 2 * pi;
+    const fullSweep = 2 * pi;
 
-    // Background arc (light blue/grey)
-    final backgroundPaint = Paint()
-      ..color = Colors.blue.shade50
+    // Draw faint background ring (glass feel)
+    final bgPaint = Paint()
+      ..color = Colors.white.withOpacity(0.06)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(center, radius, bgPaint);
 
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      startAngle,
-      sweepAngle,
-      false,
-      backgroundPaint,
-    );
+    // Segmented subtle bands
+    final segments = <Map<String, Object>>[
+      {'color': const Color(0xFFE53935), 'stop': 0.49},
+      {'color': const Color(0xFFFFA000), 'stop': 0.79},
+      {'color': const Color(0xFF27AE60), 'stop': 1.0},
+    ];
 
-    // Foreground arc
-    final foregroundPaint = Paint()
-      ..shader = SweepGradient(
-        colors: [color.withOpacity(0.8), color],
+    double last = 0.0;
+    for (final seg in segments) {
+      final segStop = (seg['stop']! as double).clamp(0.0, 1.0);
+      final sweep = fullSweep * (segStop - last);
+      final segPaint = Paint()
+        ..color = (seg['color']! as Color).withOpacity(0.12)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.butt;
+
+      canvas.drawArc(Rect.fromCircle(center: center, radius: radius), startAngle + fullSweep * last, sweep, false, segPaint);
+      last = segStop;
+    }
+
+    // Foreground gradient sweep
+    if (percentage > 0.0001) {
+      final sweep = fullSweep * percentage;
+
+      final shader = SweepGradient(
         startAngle: startAngle,
-        endAngle: startAngle + (sweepAngle * percentage),
-      ).createShader(Rect.fromCircle(center: center, radius: radius))
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+        endAngle: startAngle + sweep,
+        colors: [color.withOpacity(0.9), color.withOpacity(0.6)],
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
 
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      startAngle,
-      sweepAngle * percentage,
-      false,
-      foregroundPaint,
-    );
+      final fgPaint = Paint()
+        ..shader = shader
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+
+      canvas.drawArc(Rect.fromCircle(center: center, radius: radius), startAngle, sweep, false, fgPaint);
+
+      // glow
+      final glowPaint = Paint()
+        ..color = color.withOpacity(0.12)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth * 1.6
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
+      canvas.drawArc(Rect.fromCircle(center: center, radius: radius), startAngle, sweep, false, glowPaint);
+
+      // knob
+      final endAngle = startAngle + sweep;
+      final knob = Offset(cos(endAngle), sin(endAngle)) * radius + center;
+      canvas.drawCircle(knob.translate(0, 1.6), strokeWidth * 0.45 + 1.6, Paint()..color = Colors.black.withOpacity(0.12));
+      canvas.drawCircle(knob, strokeWidth * 0.45, Paint()..color = color);
+    }
+
+    // small center inner ring for depth
+    final innerPaint = Paint()
+      ..color = Colors.white.withOpacity(0.03)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    canvas.drawCircle(center, radius * 0.6, innerPaint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _RiskMeterPainter oldDelegate) {
+    return oldDelegate.percentage != percentage || oldDelegate.color != color;
+  }
 }
+

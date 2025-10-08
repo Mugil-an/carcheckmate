@@ -31,11 +31,16 @@ class ChecklistBloc extends Bloc<ChecklistEvent, ChecklistState> {
         final cars = await _repository.getCarList();
         emit(state.copyWith(status: ChecklistStatus.loaded, carList: cars));
       } else {
-        final car = await _repository.getCarByModelDetails(event.car!['brand'], event.car!['model'], event.car!['year']);
+        final carData = event.car!;
+        final car = await _repository.getCarByModelDetails(
+          carData['brand'],
+          carData['model'],
+          carData['year'],
+        );
         if (car != null) {
           final items = car.checklistItems;
           final Map<String, bool> selections = {
-            for (var item in items) item.issue: false
+            for (var item in items) item.issue: false // Start with all items unchecked (no problems)
           };
           final riskScore = _riskService.calculateScore(
             items: items,

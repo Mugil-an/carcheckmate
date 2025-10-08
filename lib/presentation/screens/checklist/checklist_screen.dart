@@ -1,170 +1,190 @@
-import 'package:carcheckmate/presentation/screens/car_selection/car_selection_screen.dart';
-import 'package:carcheckmate/presentation/screens/widgets/risk_meter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../logic/checklist/checklist_bloc.dart';
-import '../../../data/models/checklist_item.dart';
+import '../../widgets/common_background.dart';
+import '../widgets/risk_meter.dart';
+import '../../../app/theme.dart';
 
 class ChecklistScreen extends StatefulWidget {
-  const ChecklistScreen({super.key});
+  final Map<String, dynamic>? selectedCar;
+
+  const ChecklistScreen({super.key, this.selectedCar});
 
   @override
   State<ChecklistScreen> createState() => _ChecklistScreenState();
 }
 
 class _ChecklistScreenState extends State<ChecklistScreen> {
-  final TextEditingController _carSelectionController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Always load all cars first
+    context.read<ChecklistBloc>().add(LoadInitialData());
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Car CheckMate"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              // TODO: open drawer or menu
-            },
-          )
-        ],
-      ),
-      body: Column(
-        children: [
-          // Car selection row
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
+    return AppBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: const CommonAppBar(title: 'Vehicle Checklist'),
+        body: BlocBuilder<ChecklistBloc, ChecklistState>(
+          builder: (context, state) {
+            if (state.status == ChecklistStatus.loading) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              );
+            }
+            
+            if (state.status == ChecklistStatus.error) {
+              return Center(
+                child: Text(
+                  state.errorMessage ?? "Error loading",
+                  style: const TextStyle(color: Colors.white),
+                ),
+              );
+            }
+            
+            return Column(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _carSelectionController,
-                    readOnly: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Selected Car',
-                      prefixIcon: Icon(Icons.directions_car),
+                // Car Selection Dropdown
+                if (state.carList.isNotEmpty) ...[
+                  Container(
+                    margin: const EdgeInsets.all(16.0),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/car_selection');
+                      },
+                      icon: const Icon(Icons.directions_car),
+                      label: Text(
+                        state.selectedCar?.displayName ?? 'Select a vehicle to inspect',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
+                        minimumSize: const Size(double.infinity, 56),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () async {
-                    final selectedCar = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const CarSelectionScreen()),
-                    );
-                    if (selectedCar != null) {
-                      setState(() {
-                        _carSelectionController.text = selectedCar['display'];
-                      });
-                      context
-                          .read<ChecklistBloc>()
-                          .add(LoadInitialData(car: selectedCar));
-                    }
-                  },
-                  child: const Text("Select Car"),
+                ],
+                
+                // Risk Meter - shown when checklist is loaded
+                if (state.selectedCar != null && state.checklistItems.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: RiskMeter(score: state.riskScore),
+                  ),
+                ],
+                
+                // Checklist Items
+                Expanded(
+                  child: _buildChecklistContent(state),
                 ),
               ],
-            ),
-          ),
-
-          // Risk Meter
-          BlocBuilder<ChecklistBloc, ChecklistState>(
-            builder: (context, state) {
-              if (state.status == ChecklistStatus.loaded &&
-                  state.checklistItems.isNotEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: RiskMeter(score: state.riskScore),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-
-          const SizedBox(height: 8),
-
-          // Checklist
-          Expanded(
-            child: BlocBuilder<ChecklistBloc, ChecklistState>(
-              builder: (context, state) {
-                if (state.status == ChecklistStatus.loading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state.status == ChecklistStatus.error) {
-                  return Center(
-                      child: Text(state.errorMessage ?? "Error loading"));
-                } else if (state.status == ChecklistStatus.loaded) {
-                  final items = state.checklistItems;
-                  if (items.isEmpty) {
-                    return const Center(child: Text("No checklist available"));
-                  }
-
-                  return ListView.builder(
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
-                      final ChecklistItem item = items[index];
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 6.0, horizontal: 12.0),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(12.0),
-                          title: Text(item.issue,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w600)),
-                          subtitle: Row(
-                            children: [
-                              Chip(
-                                label: Text(item.severity),
-                                backgroundColor: _severityColor(item.severity),
-                                labelStyle: const TextStyle(
-                                    color: Colors.white, fontSize: 12),
-                              ),
-                              const SizedBox(width: 8),
-                              Text("₹${item.estimatedCost}",
-                                  style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary)),
-                            ],
-                          ),
-                          trailing: Checkbox(
-                            value: state.itemSelections[item.issue] ?? false,
-                            onChanged: (val) {
-                              context.read<ChecklistBloc>().add(
-                                  ToggleChecklistItem(
-                                      issue: item.issue,
-                                      selected: val ?? false));
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          )
-        ],
+            );
+          },
+        ),
       ),
     );
   }
-
-  Color _severityColor(String severity) {
-    switch (severity.toLowerCase()) {
-      case "high":
-        return Colors.red;
-      case "medium":
-        return Colors.orange;
-      default:
-        return Colors.grey;
+  
+  Widget _buildChecklistContent(ChecklistState state) {
+    if (state.selectedCar == null) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.directions_car,
+              size: 64,
+              color: Colors.white54,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Please select a vehicle from the dropdown above',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
     }
-  }
-
-  @override
-  void dispose() {
-    _carSelectionController.dispose();
-    super.dispose();
+    
+    if (state.checklistItems.isEmpty) {
+      return const Center(
+        child: Text(
+          'No checklist items available for this vehicle',
+          style: TextStyle(color: Colors.white70),
+        ),
+      );
+    }
+    
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: state.checklistItems.length,
+      itemBuilder: (context, index) {
+        final item = state.checklistItems[index];
+        final isSelected = state.itemSelections[item.issue] ?? false;
+        
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12.0),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected 
+                  ? Colors.red.withOpacity(0.5) 
+                  : Colors.white.withOpacity(0.1),
+            ),
+          ),
+          child: CheckboxListTile(
+            value: isSelected,
+            onChanged: (bool? value) {
+              context.read<ChecklistBloc>().add(
+                ToggleChecklistItem(
+                  issue: item.issue,
+                  selected: value ?? false,
+                ),
+              );
+            },
+            title: Text(
+              item.issue,
+              style: TextStyle(
+                color: isSelected ? Colors.red[300] : Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(
+                  'Severity: ${item.severity} • Cost: ₹${item.estimatedCost}',
+                  style: TextStyle(
+                    color: isSelected ? Colors.red[200] : Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            activeColor: Colors.red,
+            checkColor: Colors.white,
+            controlAffinity: ListTileControlAffinity.trailing,
+          ),
+        );
+      },
+    );
   }
 }

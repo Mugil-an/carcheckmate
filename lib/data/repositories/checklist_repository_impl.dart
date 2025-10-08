@@ -17,10 +17,13 @@ class ChecklistRepositoryImpl implements ChecklistRepository {
   }
 
   @override
-  Future<Car?> getCarByModelDetails(String brand, String model, int year) async {
+  Future<Car?> getCarByModelDetails(String brand, String model, dynamic year) async {
     final carModels = await _local.loadCarModels();
     try {
-      final carModel = carModels.firstWhere((car) => car.brand == brand && car.model == model && car.year == year);
+      final carModel = carModels.firstWhere((car) =>
+          car.brand == brand &&
+          car.model == model &&
+          car.year.toString() == year.toString());
       return _toDomainCar(carModel);
     } catch (e) {
       return null;

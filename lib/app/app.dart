@@ -11,7 +11,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: "CarCheckMate",
       theme: appTheme,
-      initialRoute: '/login',
+      initialRoute: '/home',
       onGenerateRoute: AppRouter.generateRoute,
       debugShowCheckedModeBanner: false,
     );
