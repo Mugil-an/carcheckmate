@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carcheckmate/logic/checklist/checklist_bloc.dart';
 import 'package:carcheckmate/logic/auth/auth_bloc.dart';
 import 'package:carcheckmate/logic/auth/auth_event.dart';
+import 'package:carcheckmate/logic/auth/auth_state.dart';
 import '../../widgets/common_background.dart';
 class HomeScreen extends StatefulWidget {
   static const routeName = '/';
@@ -38,13 +39,13 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 // Logo
                 Container(
-                  height: 80,
+                  height: 120,
                   child: Image.asset(
                     'assets/images/carcheckmate_logo.png',
                     fit: BoxFit.contain,
                     errorBuilder: (_, __, ___) => const Icon(
                       Icons.directions_car,
-                      size: 80,
+                      size: 120,
                       color: Colors.white,
                     ),
                   ),
@@ -139,24 +140,87 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: const Color(0xFF1A2332),
       child: Column(
         children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(
-              color: Color(0xFF2E3A59),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.directions_car, color: Colors.white, size: 40),
-                SizedBox(width: 12),
-                Text(
-                  'Guest',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              String username = 'Guest';
+              String email = '';
+              
+              if (state is Authenticated) {
+                username = state.user.displayName ?? 
+                          state.user.email?.split('@').first ?? 
+                          'User';
+                email = state.user.email ?? '';
+              }
+              
+              return DrawerHeader(
+                decoration: const BoxDecoration(
+                  color: Color(0xFF2E3A59),
                 ),
-              ],
-            ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                username,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (email.isNotEmpty)
+                                Text(
+                                  email,
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontSize: 14,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        state is Authenticated ? 'Online' : 'Offline',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
           _buildDrawerItem(
             icon: Icons.checklist,
@@ -187,15 +251,15 @@ class _HomeScreenState extends State<HomeScreen> {
             title: 'Fraud Education',
             onTap: () {
               Navigator.pop(context);
-              // Navigate to fraud education screen
+              Navigator.pushNamed(context, '/fraud-awareness');
             },
           ),
           _buildDrawerItem(
             icon: Icons.poll,
-            title: 'Survey',
+            title: 'Survey & Feedback',
             onTap: () {
               Navigator.pop(context);
-              // Navigate to survey screen
+              Navigator.pushNamed(context, '/survey');
             },
           ),
           const Spacer(),

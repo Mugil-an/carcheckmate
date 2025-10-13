@@ -42,81 +42,87 @@ class _VehicleSearchBarState extends State<VehicleSearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF2D2D2D),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: const Color(0xFF404040),
-          width: 1,
+    return Column(
+      children: [
+        // Search Input Container
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.2)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                child: const Icon(
+                  Icons.directions_car,
+                  color: Colors.white70,
+                  size: 24,
+                ),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  decoration: const InputDecoration(
+                    hintText: 'TN22AB1122',
+                    hintStyle: TextStyle(
+                      color: Colors.white54,
+                      fontSize: 16,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(vertical: 20),
+                  ),
+                  onSubmitted: (_) => _onSearch(),
+                  textCapitalization: TextCapitalization.characters,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(12.0),
-            child: Icon(
-              Icons.directions_car,
-              color: Colors.grey,
-              size: 20,
-            ),
-          ),
-          Expanded(
-            child: TextField(
-              controller: _controller,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
-              decoration: const InputDecoration(
-                hintText: 'tn22ab1122',
-                hintStyle: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 12),
-              ),
-              onSubmitted: (_) => _onSearch(),
-              textCapitalization: TextCapitalization.characters,
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.all(4),
-            child: ElevatedButton(
-              onPressed: _isSearching ? null : _onSearch,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isSearching ? Colors.grey : const Color(0xFF2196F3),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-                elevation: 0,
-              ),
-              child: _isSearching
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : const Text(
-                      'Search',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+        const SizedBox(height: 20),
+        
+        // Search Button
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton.icon(
+            onPressed: _isSearching ? null : _onSearch,
+            icon: _isSearching
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Color(0xFF2E3A59),
                       ),
                     ),
+                  )
+                : const Icon(Icons.search, size: 24),
+            label: Text(
+              _isSearching ? 'Searching...' : 'Search Vehicle',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF2E3A59),
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

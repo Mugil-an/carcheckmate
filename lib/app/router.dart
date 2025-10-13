@@ -9,6 +9,8 @@ import '../presentation/screens/checklist/checklist_screen.dart';
 import '../presentation/screens/car_selection/car_selection_screen.dart';
 import '../presentation/screens/ocr/ocr_screen.dart';
 import '../presentation/screens/rto_lien_verification_screen.dart';
+import '../presentation/screens/fraud_awareness_screen.dart';
+import '../presentation/screens/survey_feedback_screen.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -36,6 +38,10 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const OCRScreen());
       case '/rto':
         return MaterialPageRoute(builder: (_) => const RtoLienVerificationScreen());
+      case '/fraud-awareness':
+        return MaterialPageRoute(builder: (_) => const FraudAwarenessScreen());
+      case '/survey':
+        return MaterialPageRoute(builder: (_) => const SurveyFeedbackScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
