@@ -27,11 +27,11 @@ class OCRBoundingBox {
   });
 
   Map<String, dynamic> toJson() => {
-    'left': left,
-    'top': top,
-    'width': width,
-    'height': height,
-  };
+        'left': left,
+        'top': top,
+        'width': width,
+        'height': height,
+      };
 }
 
 /// Represents a text element with its properties
@@ -47,10 +47,10 @@ class OCRTextElement {
   });
 
   Map<String, dynamic> toJson() => {
-    'text': text,
-    'boundingBox': boundingBox.toJson(),
-    'confidence': confidence,
-  };
+        'text': text,
+        'boundingBox': boundingBox.toJson(),
+        'confidence': confidence,
+      };
 }
 
 /// Represents a line of text containing multiple elements
@@ -68,11 +68,11 @@ class OCRTextLine {
   });
 
   Map<String, dynamic> toJson() => {
-    'text': text,
-    'elements': elements.map((e) => e.toJson()).toList(),
-    'boundingBox': boundingBox.toJson(),
-    'confidence': confidence,
-  };
+        'text': text,
+        'elements': elements.map((e) => e.toJson()).toList(),
+        'boundingBox': boundingBox.toJson(),
+        'confidence': confidence,
+      };
 }
 
 /// Represents a block of text containing multiple lines
@@ -90,11 +90,11 @@ class OCRTextBlock {
   });
 
   Map<String, dynamic> toJson() => {
-    'text': text,
-    'lines': lines.map((l) => l.toJson()).toList(),
-    'boundingBox': boundingBox.toJson(),
-    'confidence': confidence,
-  };
+        'text': text,
+        'lines': lines.map((l) => l.toJson()).toList(),
+        'boundingBox': boundingBox.toJson(),
+        'confidence': confidence,
+      };
 }
 
 /// Structured data extracted from documents
@@ -118,14 +118,14 @@ class StructuredData {
   });
 
   Map<String, dynamic> toJson() => {
-    'phoneNumbers': phoneNumbers,
-    'emailAddresses': emailAddresses,
-    'dates': dates,
-    'amounts': amounts,
-    'vehiclePlates': vehiclePlates,
-    'odometerReadings': odometerReadings,
-    'documentType': documentType,
-  };
+        'phoneNumbers': phoneNumbers,
+        'emailAddresses': emailAddresses,
+        'dates': dates,
+        'amounts': amounts,
+        'vehiclePlates': vehiclePlates,
+        'odometerReadings': odometerReadings,
+        'documentType': documentType,
+      };
 }
 
 /// Result of OCR processing
@@ -155,12 +155,12 @@ class OCRResult {
   }
 
   Map<String, dynamic> toJson() => {
-    'extractedText': extractedText,
-    'confidence': confidence,
-    'detectedLanguages': detectedLanguages,
-    'textBlocks': textBlocks.map((b) => b.toJson()).toList(),
-    'structuredData': structuredData.toJson(),
-  };
+        'extractedText': extractedText,
+        'confidence': confidence,
+        'detectedLanguages': detectedLanguages,
+        'textBlocks': textBlocks.map((b) => b.toJson()).toList(),
+        'structuredData': structuredData.toJson(),
+      };
 }
 
 /// Represents a service record
@@ -178,11 +178,11 @@ class ServiceRecord {
   });
 
   Map<String, dynamic> toJson() => {
-    'date': date,
-    'odometer': odometer,
-    'amount': amount,
-    'description': description,
-  };
+        'date': date,
+        'odometer': odometer,
+        'amount': amount,
+        'description': description,
+      };
 }
 
 /// Analysis result for service history
@@ -200,11 +200,11 @@ class ServiceHistoryAnalysis {
   });
 
   Map<String, dynamic> toJson() => {
-    'records': records.map((r) => r.toJson()).toList(),
-    'issues': issues,
-    'documentType': documentType,
-    'confidence': confidence,
-  };
+        'records': records.map((r) => r.toJson()).toList(),
+        'issues': issues,
+        'documentType': documentType,
+        'confidence': confidence,
+      };
 }
 
 /// Service for performing OCR on images and documents
@@ -246,7 +246,9 @@ class OCRService {
       return OCRResult(
         extractedText: recognizedText.text,
         confidence: confidence,
-        detectedLanguages: ['en'], // ML Kit doesn't provide language detection in this version
+        detectedLanguages: [
+          'en'
+        ], // ML Kit doesn't provide language detection in this version
         textBlocks: textBlocks,
         structuredData: structuredData,
       );
@@ -296,7 +298,8 @@ class OCRService {
     try {
       // PDF OCR would require additional dependencies like pdf_render
       // For now, return an informative error
-      throw OCRException('PDF OCR requires additional setup. Please convert PDF to image first.');
+      throw OCRException(
+          'PDF OCR requires additional setup. Please convert PDF to image first.');
     } catch (e) {
       throw OCRException('PDF OCR processing failed: $e');
     }
@@ -350,39 +353,37 @@ class OCRService {
   StructuredData extractStructuredData(String text) {
     // Phone number patterns (Indian format)
     final phoneRegex = RegExp(r'(\+91[-\s]?)?[6-9]\d{9}');
-    final phoneNumbers = phoneRegex.allMatches(text)
-        .map((match) => match.group(0)!)
-        .toList();
+    final phoneNumbers =
+        phoneRegex.allMatches(text).map((match) => match.group(0)!).toList();
 
     // Email patterns
-    final emailRegex = RegExp(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b');
-    final emailAddresses = emailRegex.allMatches(text)
-        .map((match) => match.group(0)!)
-        .toList();
+    final emailRegex =
+        RegExp(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b');
+    final emailAddresses =
+        emailRegex.allMatches(text).map((match) => match.group(0)!).toList();
 
     // Date patterns (DD/MM/YYYY, DD-MM-YYYY, etc.)
     final dateRegex = RegExp(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{4}\b');
-    final dates = dateRegex.allMatches(text)
-        .map((match) => match.group(0)!)
-        .toList();
+    final dates =
+        dateRegex.allMatches(text).map((match) => match.group(0)!).toList();
 
     // Amount patterns (₹ symbol, numbers with commas)
-    final amountRegex = RegExp(r'₹\s*[\d,]+(?:\.\d{2})?|\b\d{1,3}(?:,\d{3})*(?:\.\d{2})?\s*(?:rupees?|rs?\.?|inr)\b', caseSensitive: false);
-    final amounts = amountRegex.allMatches(text)
-        .map((match) => match.group(0)!)
-        .toList();
+    final amountRegex = RegExp(
+        r'₹\s*[\d,]+(?:\.\d{2})?|\b\d{1,3}(?:,\d{3})*(?:\.\d{2})?\s*(?:rupees?|rs?\.?|inr)\b',
+        caseSensitive: false);
+    final amounts =
+        amountRegex.allMatches(text).map((match) => match.group(0)!).toList();
 
     // Vehicle plate patterns (Indian format)
     final plateRegex = RegExp(r'\b[A-Z]{2}\s*\d{2}\s*[A-Z]{1,2}\s*\d{4}\b');
-    final vehiclePlates = plateRegex.allMatches(text)
-        .map((match) => match.group(0)!)
-        .toList();
+    final vehiclePlates =
+        plateRegex.allMatches(text).map((match) => match.group(0)!).toList();
 
     // Odometer readings
-    final odometerRegex = RegExp(r'\b\d{1,6}\s*(?:km|kms|kilometers?)\b', caseSensitive: false);
-    final odometerReadings = odometerRegex.allMatches(text)
-        .map((match) => match.group(0)!)
-        .toList();
+    final odometerRegex =
+        RegExp(r'\b\d{1,6}\s*(?:km|kms|kilometers?)\b', caseSensitive: false);
+    final odometerReadings =
+        odometerRegex.allMatches(text).map((match) => match.group(0)!).toList();
 
     // Document type detection
     final documentType = _detectDocumentType(text);
@@ -402,21 +403,20 @@ class OCRService {
   String _detectDocumentType(String text) {
     final lowerText = text.toLowerCase();
 
-    if (lowerText.contains('service') && 
+    if (lowerText.contains('service') &&
         (lowerText.contains('history') || lowerText.contains('record'))) {
       return 'service_record';
-    } else if (lowerText.contains('insurance') && 
-               lowerText.contains('policy')) {
+    } else if (lowerText.contains('insurance') &&
+        lowerText.contains('policy')) {
       return 'insurance_document';
-    } else if (lowerText.contains('registration') && 
-               lowerText.contains('certificate')) {
+    } else if (lowerText.contains('registration') &&
+        lowerText.contains('certificate')) {
       return 'registration_certificate';
-    } else if (lowerText.contains('invoice') || 
-               lowerText.contains('bill') || 
-               lowerText.contains('receipt')) {
+    } else if (lowerText.contains('invoice') ||
+        lowerText.contains('bill') ||
+        lowerText.contains('receipt')) {
       return 'invoice';
-    } else if (lowerText.contains('loan') && 
-               lowerText.contains('agreement')) {
+    } else if (lowerText.contains('loan') && lowerText.contains('agreement')) {
       return 'loan_document';
     } else {
       return 'unknown';
@@ -452,7 +452,8 @@ class OCRService {
       if (line.isEmpty) continue;
 
       // Look for date patterns
-      final dateMatch = RegExp(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{4}\b').firstMatch(line);
+      final dateMatch =
+          RegExp(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{4}\b').firstMatch(line);
       if (dateMatch != null) {
         // If we have accumulated data, create a record
         if (currentDate.isNotEmpty && currentDescription.isNotEmpty) {
@@ -463,7 +464,7 @@ class OCRService {
             description: currentDescription,
           ));
         }
-        
+
         // Start new record
         currentDate = dateMatch.group(0)!;
         currentOdometer = '';
@@ -472,20 +473,40 @@ class OCRService {
       }
 
       // Look for odometer readings
-      final odometerMatch = RegExp(r'\b(\d{1,6})\s*(?:km|kms|kilometers?)\b', caseSensitive: false).firstMatch(line);
+      final odometerMatch = RegExp(r'\b(\d{1,6})\s*(?:km|kms|kilometers?)\b',
+              caseSensitive: false)
+          .firstMatch(line);
       if (odometerMatch != null) {
         currentOdometer = '${odometerMatch.group(1)} km';
       }
 
       // Look for amounts
-      final amountMatch = RegExp(r'₹\s*[\d,]+(?:\.\d{2})?|\b\d{1,3}(?:,\d{3})*(?:\.\d{2})?\s*(?:rupees?|rs?\.?|inr)\b', caseSensitive: false).firstMatch(line);
+      final amountMatch = RegExp(
+              r'₹\s*[\d,]+(?:\.\d{2})?|\b\d{1,3}(?:,\d{3})*(?:\.\d{2})?\s*(?:rupees?|rs?\.?|inr)\b',
+              caseSensitive: false)
+          .firstMatch(line);
       if (amountMatch != null) {
         currentAmount = amountMatch.group(0)!;
       }
 
       // Look for service descriptions
-      final serviceKeywords = ['service', 'repair', 'maintenance', 'replacement', 'check', 'oil', 'brake', 'engine', 'transmission', 'suspension', 'battery', 'filter', 'alignment'];
-      if (serviceKeywords.any((keyword) => line.toLowerCase().contains(keyword))) {
+      final serviceKeywords = [
+        'service',
+        'repair',
+        'maintenance',
+        'replacement',
+        'check',
+        'oil',
+        'brake',
+        'engine',
+        'transmission',
+        'suspension',
+        'battery',
+        'filter',
+        'alignment'
+      ];
+      if (serviceKeywords
+          .any((keyword) => line.toLowerCase().contains(keyword))) {
         if (currentDescription.isEmpty) {
           currentDescription = line;
         } else {
@@ -514,7 +535,8 @@ class OCRService {
     }
 
     // Calculate confidence based on found records
-    double confidence = records.isEmpty ? 0.3 : (records.length > 3 ? 0.9 : 0.7);
+    double confidence =
+        records.isEmpty ? 0.3 : (records.length > 3 ? 0.9 : 0.7);
 
     return ServiceHistoryAnalysis(
       records: records,
@@ -525,7 +547,8 @@ class OCRService {
   }
 
   /// Detect potential issues in service history
-  void _detectServiceHistoryIssues(String text, List<ServiceRecord> records, List<String> issues) {
+  void _detectServiceHistoryIssues(
+      String text, List<ServiceRecord> records, List<String> issues) {
     final lowerText = text.toLowerCase();
 
     // Check for unauthorized service centers
@@ -540,13 +563,16 @@ class OCRService {
       // Check for records without amounts
       int recordsWithoutAmount = records.where((r) => r.amount == 'N/A').length;
       if (recordsWithoutAmount > 0) {
-        issues.add('$recordsWithoutAmount service records are missing amount information');
+        issues.add(
+            '$recordsWithoutAmount service records are missing amount information');
       }
 
       // Check for records without odometer readings
-      int recordsWithoutOdometer = records.where((r) => r.odometer == 'N/A').length;
+      int recordsWithoutOdometer =
+          records.where((r) => r.odometer == 'N/A').length;
       if (recordsWithoutOdometer > 0) {
-        issues.add('$recordsWithoutOdometer service records are missing odometer readings');
+        issues.add(
+            '$recordsWithoutOdometer service records are missing odometer readings');
       }
 
       // Check for potential service gaps (if we have dates)
@@ -554,7 +580,7 @@ class OCRService {
           .where((r) => r.date.contains('/') && r.date.length >= 8)
           .map((r) => r.date)
           .toList();
-      
+
       if (datesWithYear.isNotEmpty && datesWithYear.length >= 2) {
         // Simple check for potential gaps (this could be more sophisticated)
         issues.add('Please verify service intervals for any potential gaps');

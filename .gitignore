@@ -1,4 +1,10 @@
 lib/firebase_options.dart
+
+# Environment files - Never commit API keys!
+.env
+.env.local
+.env.production
+
 # Miscellaneous
 *.class
 *.log

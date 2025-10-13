@@ -8,7 +8,7 @@ import '../presentation/screens/home/home_screen.dart';
 import '../presentation/screens/checklist/checklist_screen.dart';
 import '../presentation/screens/car_selection/car_selection_screen.dart';
 import '../presentation/screens/ocr/ocr_screen.dart';
-import '../presentation/screens/rto/rto_screen.dart';
+import '../presentation/screens/rto_lien_verification_screen.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -35,7 +35,7 @@ class AppRouter {
       case '/ocr':
         return MaterialPageRoute(builder: (_) => const OCRScreen());
       case '/rto':
-        return MaterialPageRoute(builder: (_) => const RTOScreen());
+        return MaterialPageRoute(builder: (_) => const RtoLienVerificationScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

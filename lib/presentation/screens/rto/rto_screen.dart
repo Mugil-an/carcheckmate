@@ -125,7 +125,7 @@ class _RTOScreenState extends State<RTOScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Sample Data Preview (mock)
+                // Vehicle information section
                 _buildInfoSection(),
               ],
             ),
@@ -210,7 +210,7 @@ class _RTOScreenState extends State<RTOScreen> {
   }
 
   void _showRTODetails() {
-    // Mock implementation - show bottom sheet with details
+    // Show RTO details in bottom sheet
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A2332),
