@@ -4,6 +4,7 @@ import 'package:carcheckmate/domain/entities/car.dart';
 import 'package:carcheckmate/data/datasources/local_checklist_datasource.dart';
 import 'package:carcheckmate/data/models/checklist_item.dart' as dmodel;
 import 'package:carcheckmate/data/models/car_model.dart';
+import '../../core/exceptions/checklist_exceptions.dart';
 
 class ChecklistRepositoryImpl implements ChecklistRepository {
   final LocalChecklistDataSource _local;
@@ -12,21 +13,44 @@ class ChecklistRepositoryImpl implements ChecklistRepository {
 
   @override
   Future<List<Car>> getCarList() async {
-    final carModels = await _local.loadCarModels();
-    return carModels.map((m) => _toDomainCar(m)).toList();
+    try {
+      final carModels = await _local.loadCarModels();
+      if (carModels.isEmpty) {
+        throw const CarListLoadFailedException();
+      }
+      return carModels.map((m) => _toDomainCar(m)).toList();
+    } catch (e) {
+      if (e is ChecklistException) rethrow;
+      throw const ChecklistLoadFailedException();
+    }
   }
 
   @override
   Future<Car?> getCarByModelDetails(String brand, String model, dynamic year) async {
-    final carModels = await _local.loadCarModels();
     try {
-      final carModel = carModels.firstWhere((car) =>
-          car.brand == brand &&
-          car.model == model &&
-          car.year.toString() == year.toString());
+      // Validate input parameters
+      if (brand.isEmpty || model.isEmpty) {
+        throw const InvalidCarSelectionException();
+      }
+
+      final carModels = await _local.loadCarModels();
+      if (carModels.isEmpty) {
+        throw const CarListLoadFailedException();
+      }
+
+      final carModel = carModels.firstWhere(
+        (car) =>
+            car.brand == brand &&
+            car.model == model &&
+            car.year.toString() == year.toString(),
+        orElse: () => throw const CarDataNotFoundException(),
+      );
+      
       return _toDomainCar(carModel);
+    } on ChecklistException {
+      rethrow;
     } catch (e) {
-      return null;
+      throw const CarDataNotFoundException();
     }
   }
 

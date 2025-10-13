@@ -6,6 +6,7 @@ import '../../../logic/auth/auth_event.dart';
 import '../../../logic/auth/auth_state.dart';
 import '../../widgets/common_background.dart';
 import '../../../app/theme.dart';
+import '../../../core/utils/exception_handler.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController emailCtrl = TextEditingController();
@@ -21,9 +22,66 @@ class LoginScreen extends StatelessWidget {
         body: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
             if (state is AuthError) {
-              _showErrorDialog(context, state.message);
+              String errorTitle = 'Sign-in Error';
+              String? actionText;
+              VoidCallback? onAction;
+              
+              // Provide specific guidance based on error type
+              String errorMessage = state.message.toLowerCase();
+              if (errorMessage.contains('user-not-found') || errorMessage.contains('user not found')) {
+                errorTitle = 'Account Not Found';
+                actionText = 'Create Account';
+                onAction = () {
+                  Navigator.pushNamed(context, '/register');
+                };
+              } else if (errorMessage.contains('wrong-password') || errorMessage.contains('invalid-credential')) {
+                errorTitle = 'Invalid Credentials';
+                actionText = 'Reset Password';
+                onAction = () {
+                  Navigator.pushNamed(context, '/forgot-password');
+                };
+              } else if (errorMessage.contains('too-many-requests')) {
+                errorTitle = 'Too Many Attempts';
+                actionText = 'Try Later';
+              } else if (errorMessage.contains('network') || errorMessage.contains('connection')) {
+                errorTitle = 'Connection Error';
+                actionText = 'Retry';
+                onAction = () {
+                  // User can try signing in again
+                };
+              }
+              
+              ExceptionHandler.handleError(
+                context,
+                state.message,
+                title: errorTitle,
+                actionText: actionText,
+                onAction: onAction,
+              );
             } else if (state is Authenticated) {
-              Navigator.pushReplacementNamed(context, "/home");
+              try {
+                Navigator.pushReplacementNamed(context, "/home");
+              } catch (e) {
+                // Use simple error dialog to prevent any crashes
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  showDialog(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      title: const Text('Navigation Error'),
+                      content: const Text('Successfully signed in, but failed to navigate to home screen. Please tap OK to continue.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(dialogContext).pop();
+                            Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+                          },
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                });
+              }
             }
           },
           builder: (context, state) {
@@ -128,20 +186,43 @@ class LoginScreen extends StatelessWidget {
       child: ElevatedButton(
         onPressed: () {
           // Validate inputs
-          if (emailCtrl.text.trim().isEmpty) {
-            _showErrorDialog(context, 'Please enter your email address');
+          if (emailCtrl.text.isEmpty) {
+            ExceptionHandler.handleError(
+              context,
+              'Please enter your email address',
+              title: 'Validation Error',
+            );
             return;
           }
           if (passCtrl.text.isEmpty) {
-            _showErrorDialog(context, 'Please enter your password');
+            ExceptionHandler.handleError(
+              context,
+              'Please enter your password',
+              title: 'Validation Error',
+            );
             return;
           }
-          if (!_isValidEmail(emailCtrl.text.trim())) {
-            _showErrorDialog(context, 'Please enter a valid email address');
+          if (!_isValidEmail(emailCtrl.text)) {
+            ExceptionHandler.handleError(
+              context,
+              'Please enter a valid email address',
+              title: 'Validation Error',
+            );
             return;
           }
           
-          context.read<AuthBloc>().add(AuthLogin(emailCtrl.text.trim(), passCtrl.text));
+          try {
+            // Show loading state
+            debugPrint('Attempting to sign in with email: ${emailCtrl.text.trim()}');
+            context.read<AuthBloc>().add(AuthLogin(emailCtrl.text.trim(), passCtrl.text));
+          } catch (e) {
+            ExceptionHandler.handleError(
+              context,
+              e,
+              title: 'Sign-in Error',
+              customMessage: 'Failed to initiate sign-in process. Please check your connection and try again.',
+            );
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.accent,
@@ -165,116 +246,7 @@ class LoginScreen extends StatelessWidget {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
-  void _showErrorDialog(BuildContext context, dynamic error) {
-    String message;
-    if (error is PlatformException) {
-      message = _handlePlatformException(error);
-    } else {
-      message = error.toString();
-    }
-    
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.cardBackground,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: AppColors.borderColor.withOpacity(0.3)),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.error_outline,
-                color: AppColors.error,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Login Error',
-                style: TextStyle(
-                  color: AppColors.error,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            _getUserFriendlyMessage(message),
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 16,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'OK',
-                style: TextStyle(
-                  color: AppColors.accent,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
-  String _handlePlatformException(PlatformException e) {
-    switch (e.code) {
-      case 'ERROR_INVALID_CREDENTIAL':
-        return 'The login credentials are incorrect, malformed, or have expired. Please check your email and password and try again.';
-      case 'ERROR_USER_NOT_FOUND':
-        return 'No account found with this email address. Please check your email or sign up for a new account.';
-      case 'ERROR_WRONG_PASSWORD':
-        return 'The password is incorrect. Please check your password and try again.';
-      case 'ERROR_USER_DISABLED':
-        return 'This account has been disabled. Please contact support for assistance.';
-      case 'ERROR_TOO_MANY_REQUESTS':
-        return 'Too many failed login attempts. Please wait a moment before trying again.';
-      case 'ERROR_OPERATION_NOT_ALLOWED':
-        return 'Email/password sign in is not enabled. Please contact support.';
-      case 'ERROR_INVALID_EMAIL':
-        return 'The email address is not valid. Please enter a valid email address.';
-      case 'ERROR_NETWORK_REQUEST_FAILED':
-        return 'Network error. Please check your internet connection and try again.';
-      default:
-        return e.message ?? 'Authentication failed. Please try again.';
-    }
-  }
-
-  String _getUserFriendlyMessage(String errorMessage) {
-    final lowercaseMessage = errorMessage.toLowerCase();
-    
-    if (lowercaseMessage.contains('user-not-found') || 
-        lowercaseMessage.contains('user not found')) {
-      return 'No account found with this email address. Please check your email or sign up for a new account.';
-    } else if (lowercaseMessage.contains('wrong-password') || 
-               lowercaseMessage.contains('invalid-credential') ||
-               lowercaseMessage.contains('error_invalid_credential') ||
-               lowercaseMessage.contains('incorrect password') ||
-               lowercaseMessage.contains('malformed or has expired')) {
-      return 'The login credentials are incorrect or have expired. Please check your email and password, or try signing in again.';
-    } else if (lowercaseMessage.contains('invalid-email')) {
-      return 'The email address is not valid. Please enter a valid email address.';
-    } else if (lowercaseMessage.contains('user-disabled')) {
-      return 'This account has been disabled. Please contact support for assistance.';
-    } else if (lowercaseMessage.contains('too-many-requests')) {
-      return 'Too many failed login attempts. Please wait a moment before trying again.';
-    } else if (lowercaseMessage.contains('network')) {
-      return 'Network error. Please check your internet connection and try again.';
-    } else if (lowercaseMessage.contains('timeout')) {
-      return 'Request timed out. Please check your internet connection and try again.';
-    } else if (lowercaseMessage.contains('platformexception')) {
-      return 'Authentication failed. Please check your credentials and try again.';
-    } else {
-      return errorMessage.isNotEmpty ? errorMessage : 'An unexpected error occurred. Please try again.';
-    }
-  }
 
   Widget _buildRegisterButton(BuildContext context) {
     return Row(

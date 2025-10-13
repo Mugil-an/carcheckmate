@@ -25,8 +25,9 @@ class GetVehicleDetailsUseCase {
 
     try {
       return await repository.getVehicleDetails(cleanVehicleNumber);
-    } on Failure {
-      rethrow;
+    } on Failure catch (failure) {
+      // Re-throw Failure objects so they can be handled by the BLoC
+      throw failure;
     } catch (e) {
       throw ServerFailure('Unexpected error: ${e.toString()}');
     }

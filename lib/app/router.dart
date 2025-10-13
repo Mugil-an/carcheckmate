@@ -15,7 +15,8 @@ import '../presentation/widgets/auth_guard.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
-    switch (settings.name) {
+    try {
+      switch (settings.name) {
       case '/login':
         return MaterialPageRoute(builder: (_) =>  LoginScreen());
       case '/register':
@@ -49,6 +50,34 @@ class AppRouter {
             body: Center(child: Text('No route defined for ${settings.name}')),
           ),
         );
+      }
+    } catch (e) {
+      // Fallback route in case of any error during route generation
+      debugPrint('Route generation error: $e');
+      return MaterialPageRoute(
+        builder: (_) => Scaffold(
+          appBar: AppBar(title: const Text('Error')),
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                const Text('Navigation Error'),
+                const SizedBox(height: 8),
+                Text('Failed to navigate to ${settings.name}'),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(_).pushReplacementNamed('/home');
+                  },
+                  child: const Text('Go to Home'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
   }
 }

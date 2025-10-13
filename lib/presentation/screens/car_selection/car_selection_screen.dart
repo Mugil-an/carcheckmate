@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../logic/checklist/checklist_bloc.dart';
 import '../../../domain/entities/car.dart';
 import '../../widgets/common_background.dart';
+import '../../../core/utils/exception_handler.dart';
 import '../../../app/theme.dart';
 
 class CarSelectionScreen extends StatefulWidget {
@@ -35,7 +36,12 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
     try {
       context.read<ChecklistBloc>().add(LoadInitialData());
     } catch (e) {
-      _showErrorDialog('Failed to load cars: ${e.toString()}');
+      ExceptionHandler.handleError(
+        context,
+        e,
+        title: 'Data Loading Error',
+        customMessage: 'Failed to load car data. Please try again.',
+      );
     }
   }
 
@@ -52,122 +58,27 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
     });
   }
 
-  void _showErrorDialog(String message) {
-    if (!mounted) return;
-    
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.cardBackground,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: AppColors.borderColor.withOpacity(0.3)),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.error_outline,
-                color: AppColors.error,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Error',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.error,
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            message,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'Dismiss',
-                style: TextStyle(color: AppColors.accent),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _loadCars(); // Retry loading
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-              ),
-              child: const Text('Retry'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
-  void _showSuccessDialog(String carName) {
-    if (!mounted) return;
-    
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.cardBackground,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: AppColors.borderColor.withOpacity(0.3)),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.check_circle_outline,
-                color: AppColors.success,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Vehicle Selected',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.success,
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            'You have selected: $carName',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.pushReplacementNamed(context, '/checklist');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.success,
-              ),
-              child: const Text('Continue to Checklist'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   void _onCarSelected(Car car) {
     try {
       context.read<ChecklistBloc>().add(CarSelected(car));
-      _showSuccessDialog(car.displayName);
+      ExceptionHandler.handleSuccess(
+        context,
+        title: 'Vehicle Selected',
+        message: 'Successfully selected ${car.displayName}',
+        actionText: 'Continue',
+        onAction: () {
+          Navigator.of(context).pop();
+        },
+      );
     } catch (e) {
-      _showErrorDialog('Failed to select car: ${e.toString()}');
+      ExceptionHandler.handleError(
+        context,
+        e,
+        title: 'Selection Error',
+        customMessage: 'Failed to select ${car.displayName}. Please try again.',
+      );
     }
   }
 
@@ -187,7 +98,15 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
               _allCars = List.from(state.carList);
               _filteredCars = List.from(state.carList);
             } else if (state.status == ChecklistStatus.error) {
-              _showErrorDialog(state.errorMessage ?? 'Unknown error occurred');
+              ExceptionHandler.handleError(
+                context,
+                state.errorMessage ?? 'Unknown error occurred',
+                title: 'Car Selection Error',
+                actionText: 'Retry',
+                onAction: () {
+                  context.read<ChecklistBloc>().add(LoadInitialData());
+                },
+              );
             }
           },
           child: Column(

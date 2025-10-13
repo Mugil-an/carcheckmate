@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../logic/auth/auth_bloc.dart';
 import '../../../logic/auth/auth_event.dart';
 import '../../../logic/auth/auth_state.dart';
 import '../../widgets/common_background.dart';
+import '../../../core/utils/exception_handler.dart';
 import '../../../app/theme.dart';
 
 class RegisterScreen extends StatelessWidget {
@@ -21,7 +21,11 @@ class RegisterScreen extends StatelessWidget {
         body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
-            _showErrorDialog(context, state.message);
+            ExceptionHandler.handleError(
+              context,
+              state.message,
+              title: 'Registration Error',
+            );
           } else if (state is Authenticated) {
             Navigator.pushReplacementNamed(context, "/verify");
           }
@@ -92,20 +96,36 @@ class RegisterScreen extends StatelessWidget {
       child: ElevatedButton(
         onPressed: () {
           // Validate inputs
-          if (emailCtrl.text.trim().isEmpty) {
-            _showErrorDialog(context, 'Please enter your email address');
+          if (emailCtrl.text.isEmpty) {
+            ExceptionHandler.handleError(
+              context,
+              'Please enter your email address',
+              title: 'Validation Error',
+            );
             return;
           }
           if (passCtrl.text.isEmpty) {
-            _showErrorDialog(context, 'Please enter your password');
+            ExceptionHandler.handleError(
+              context,
+              'Please enter your password',
+              title: 'Validation Error',
+            );
             return;
           }
-          if (!_isValidEmail(emailCtrl.text.trim())) {
-            _showErrorDialog(context, 'Please enter a valid email address');
+          if (!_isValidEmail(emailCtrl.text)) {
+            ExceptionHandler.handleError(
+              context,
+              'Please enter a valid email address',
+              title: 'Validation Error',
+            );
             return;
           }
           if (passCtrl.text.length < 6) {
-            _showErrorDialog(context, 'Password must be at least 6 characters long');
+            ExceptionHandler.handleError(
+              context,
+              'Password must be at least 6 characters long',
+              title: 'Validation Error',
+            );
             return;
           }
           
@@ -161,108 +181,5 @@ class RegisterScreen extends StatelessWidget {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
-  void _showErrorDialog(BuildContext context, dynamic error) {
-    String message;
-    if (error is PlatformException) {
-      message = _handlePlatformException(error);
-    } else {
-      message = error.toString();
-    }
-    
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.cardBackground,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: AppColors.borderColor.withOpacity(0.3)),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.error_outline,
-                color: AppColors.error,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Registration Error',
-                style: TextStyle(
-                  color: AppColors.error,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            _getUserFriendlyMessage(message),
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 16,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'OK',
-                style: TextStyle(
-                  color: AppColors.accent,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
-  String _handlePlatformException(PlatformException e) {
-    switch (e.code) {
-      case 'ERROR_EMAIL_ALREADY_IN_USE':
-        return 'An account with this email address already exists. Please sign in or use a different email address.';
-      case 'ERROR_INVALID_EMAIL':
-        return 'The email address is not valid. Please enter a valid email address.';
-      case 'ERROR_WEAK_PASSWORD':
-        return 'The password is too weak. Please choose a stronger password with at least 6 characters.';
-      case 'ERROR_OPERATION_NOT_ALLOWED':
-        return 'Email/password registration is not enabled. Please contact support.';
-      case 'ERROR_INVALID_CREDENTIAL':
-        return 'The registration credentials are invalid or malformed. Please check your information and try again.';
-      case 'ERROR_NETWORK_REQUEST_FAILED':
-        return 'Network error. Please check your internet connection and try again.';
-      default:
-        return e.message ?? 'Registration failed. Please try again.';
-    }
-  }
-
-  String _getUserFriendlyMessage(String errorMessage) {
-    final lowercaseMessage = errorMessage.toLowerCase();
-    
-    if (lowercaseMessage.contains('email-already-in-use') || 
-        lowercaseMessage.contains('already exists')) {
-      return 'An account with this email address already exists. Please sign in or use a different email address.';
-    } else if (lowercaseMessage.contains('weak-password')) {
-      return 'The password is too weak. Please choose a stronger password with at least 6 characters.';
-    } else if (lowercaseMessage.contains('invalid-email')) {
-      return 'The email address is not valid. Please enter a valid email address.';
-    } else if (lowercaseMessage.contains('operation-not-allowed')) {
-      return 'Email/password registration is not enabled. Please contact support.';
-    } else if (lowercaseMessage.contains('invalid-credential') ||
-               lowercaseMessage.contains('error_invalid_credential') ||
-               lowercaseMessage.contains('malformed or has expired')) {
-      return 'The registration credentials are invalid or malformed. Please check your information and try again.';
-    } else if (lowercaseMessage.contains('network')) {
-      return 'Network error. Please check your internet connection and try again.';
-    } else if (lowercaseMessage.contains('timeout')) {
-      return 'Request timed out. Please check your internet connection and try again.';
-    } else if (lowercaseMessage.contains('platformexception')) {
-      return 'Registration failed. Please check your information and try again.';
-    } else {
-      return errorMessage.isNotEmpty ? errorMessage : 'An unexpected error occurred. Please try again.';
-    }
-  }
 }

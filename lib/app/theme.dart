@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 // Beautiful gradient-inspired brand colors from design
 class AppColors {
   // Primary brand colors - Beautiful blue gradient
-  static const Color primaryDark = Color(0xFF021728);      // Darkest navy (001D39)
-  static const Color primaryMedium = Color(0xFF0A4174);     // Medium blue (0A4174)  
-  static const Color primaryLight = Color(0xFF49769F);      // Light blue (49769F)
+  static const Color primaryDark = Color.fromARGB(255, 2, 3, 46);      // Darkest navy (001D39)
+  static const Color primaryMedium = Color.fromARGB(255, 2, 42, 78);     // Medium blue (0A4174)
+  static const Color primaryLight = Color.fromARGB(255, 1, 33, 63);      // Light blue (49769F)
   
   // Accent colors - Teal gradient
-  static const Color accent = Color(0xFF4E8EA2);            // Teal accent (4E8EA2)
-  static const Color accentLight = Color(0xFF6EA2B3);       // Light teal (6EA2B3)
-  static const Color accentLightest = Color(0xFF7BBDE8);    // Lightest blue (7BBDE8)
+  static const Color accent = Color.fromARGB(255, 3, 107, 138);            // Teal accent (4E8EA2)
+  static const Color accentLight = Color.fromARGB(255, 3, 124, 165);       // Light teal (6EA2B3)
+  static const Color accentLightest = Color.fromARGB(255, 11, 159, 182);    // Lightest blue (7BBDE8)
   
   // Status colors
   static const Color success = Color(0xFF2ECC71);           // Success green

@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../config/api_keys.dart';
 import '../error/failures.dart';
+import '../exceptions/network_exceptions.dart';
 
 class HttpClient {
   final http.Client _client;
@@ -16,12 +18,20 @@ class HttpClient {
     Map<String, String>? queryParameters,
     Map<String, String>? headers,
   }) async {
-    return _makeRequest(
-      () => _client.get(
-        _buildUri(endpoint, queryParameters),
-        headers: _buildHeaders(headers),
-      ),
-    );
+    debugPrint('HttpClient: GET request to $endpoint');
+    debugPrint('HttpClient: Query parameters: $queryParameters');
+    
+    try {
+      return await _makeRequest(
+        () => _client.get(
+          _buildUri(endpoint, queryParameters),
+          headers: _buildHeaders(headers),
+        ),
+      );
+    } catch (e) {
+      debugPrint('HttpClient: GET request failed for $endpoint - $e');
+      rethrow;
+    }
   }
 
   Future<Map<String, dynamic>> post(
@@ -30,13 +40,22 @@ class HttpClient {
     Map<String, String>? headers,
     Map<String, String>? queryParameters,
   }) async {
-    return _makeRequest(
-      () => _client.post(
-        _buildUri(endpoint, queryParameters),
-        headers: _buildHeaders(headers),
-        body: body != null ? jsonEncode(body) : null,
-      ),
-    );
+    debugPrint('HttpClient: POST request to $endpoint');
+    debugPrint('HttpClient: Query parameters: $queryParameters');
+    debugPrint('HttpClient: Request body: ${body != null ? 'Present (${body.keys.length} keys)' : 'None'}');
+    
+    try {
+      return await _makeRequest(
+        () => _client.post(
+          _buildUri(endpoint, queryParameters),
+          headers: _buildHeaders(headers),
+          body: body != null ? jsonEncode(body) : null,
+        ),
+      );
+    } catch (e) {
+      debugPrint('HttpClient: POST request failed for $endpoint - $e');
+      rethrow;
+    }
   }
 
   Uri _buildUri(String endpoint, Map<String, String>? queryParameters) {
@@ -54,7 +73,12 @@ class HttpClient {
     
     if (additionalHeaders != null) {
       headers.addAll(additionalHeaders);
+      debugPrint('HttpClient: Added ${additionalHeaders.length} additional headers');
     }
+    
+    debugPrint('HttpClient: Built headers with ${headers.length} total entries');
+    // Don't log actual header values for security (especially API keys)
+    debugPrint('HttpClient: Header keys: ${headers.keys.toList()}');
     
     return headers;
   }
@@ -63,63 +87,195 @@ class HttpClient {
     Future<http.Response> Function() request,
   ) async {
     try {
+      debugPrint('HttpClient: Making API request...');
       final response = await request().timeout(ApiConfig.connectionTimeout);
+      debugPrint('HttpClient: Received response with status ${response.statusCode}');
       return _handleResponse(response);
-    } on TimeoutException {
-      throw const NetworkFailure('Request timeout - please check your internet connection');
+    } on TimeoutException catch (e) {
+      debugPrint('HttpClient: Timeout error - $e');
+      throw const ConnectionTimeoutException();
     } on SocketException catch (e) {
-      throw NetworkFailure('Connection failed: ${e.message}');
+      debugPrint('HttpClient: Socket error - $e');
+      if (e.message.contains('Failed host lookup') || 
+          e.message.contains('Network is unreachable')) {
+        throw const NoInternetConnectionException();
+      } else {
+        throw const ConnectionRefusedException();
+      }
     } on http.ClientException catch (e) {
-      throw NetworkFailure('Network error: ${e.message}');
-    } catch (e) {
-      throw ServerFailure('Unexpected error: $e');
+      debugPrint('HttpClient: Client error - $e');
+      throw const ConnectionRefusedException();
+    } on TlsException catch (e) {
+      debugPrint('HttpClient: TLS/SSL error - $e');
+      throw const ConnectionRefusedException();
+    } on NetworkException catch (e) {
+      debugPrint('HttpClient: Network exception - $e');
+      rethrow;
+    } on Failure catch (e) {
+      debugPrint('HttpClient: Failure object - $e');
+      rethrow;
+    } on FormatException catch (e) {
+      debugPrint('HttpClient: Format error - $e');
+      throw const ServerFailure('Invalid response format from server');
+    } catch (e, stackTrace) {
+      debugPrint('HttpClient: Unexpected error - $e');
+      debugPrint('HttpClient: Stack trace - $stackTrace');
+      // Handle specific error patterns like in mynotes
+      String errorMsg = e.toString();
+      if (_isNetworkError(errorMsg)) {
+        throw NetworkFailure('Network connection error: $errorMsg');
+      } else if (errorMsg.toLowerCase().contains('timeout')) {
+        throw const NetworkFailure('Request timeout. Please try again.');
+      } else if (errorMsg.toLowerCase().contains('certificate') || errorMsg.toLowerCase().contains('ssl')) {
+        throw const NetworkFailure('SSL certificate error. Please check your connection.');
+      } else if (errorMsg.toLowerCase().contains('authentication') || errorMsg.toLowerCase().contains('unauthorized')) {
+        throw const ServerFailure('Authentication failed. Please check your credentials.');
+      } else {
+        throw ServerFailure('Unexpected network error: $errorMsg');
+      }
     }
   }
 
   Map<String, dynamic> _handleResponse(http.Response response) {
     final body = response.body;
+    debugPrint('HttpClient: Response status ${response.statusCode}');
+    debugPrint('HttpClient: Response body length: ${body.length}');
     
     if (body.isEmpty) {
+      debugPrint('HttpClient: Empty response body received');
       throw const ServerFailure('Empty response from server');
     }
 
     try {
       final jsonData = jsonDecode(body) as Map<String, dynamic>;
+      debugPrint('HttpClient: Successfully parsed JSON response');
       
       switch (response.statusCode) {
         case 200:
         case 201:
+          debugPrint('HttpClient: Success response received');
           return jsonData;
         case 400:
-          throw ValidationFailure(
-            jsonData['message'] ?? 'Bad request',
-          );
+          debugPrint('HttpClient: Bad request error (400)');
+          String errorMsg = jsonData['message'] ?? jsonData['error'] ?? 'Bad request';
+          throw ValidationFailure(errorMsg);
         case 401:
-          throw const ServerFailure('Unauthorized - Check API key');
+          debugPrint('HttpClient: Unauthorized error (401)');
+          String errorMsg = jsonData['message'] ?? jsonData['error'] ?? 'Unauthorized access';
+          _handleAuthenticationError(errorMsg, 401);
+          break; // This won't be reached due to throw in _handleAuthenticationError
         case 403:
-          throw const ServerFailure('Forbidden - API key may be invalid');
+          debugPrint('HttpClient: Forbidden error (403)');
+          String errorMsg = jsonData['message'] ?? jsonData['error'] ?? 'Access forbidden';
+          _handleAuthenticationError(errorMsg, 403);
+          break; // This won't be reached due to throw in _handleAuthenticationError
         case 404:
-          throw const ServerFailure('Vehicle not found');
+          debugPrint('HttpClient: Not found error (404)');
+          String errorMsg = jsonData['message'] ?? jsonData['error'] ?? 'Resource not found';
+          if (errorMsg.toLowerCase().contains('vehicle') || 
+              errorMsg.toLowerCase().contains('registration')) {
+            throw ServerFailure('Vehicle not found: $errorMsg');
+          }
+          throw ServerFailure('Not found - $errorMsg');
         case 429:
-          throw const ServerFailure('Rate limit exceeded');
+          debugPrint('HttpClient: Rate limit exceeded (429)');
+          String errorMsg = jsonData['message'] ?? jsonData['error'] ?? 'Rate limit exceeded';
+          if (_isRateLimitError(errorMsg, 429)) {
+            throw ServerFailure('Rate limit exceeded: $errorMsg');
+          }
+          throw ServerFailure('Too many requests: $errorMsg');
         case 500:
+          debugPrint('HttpClient: Internal server error (500)');
+          String errorMsg = jsonData['message'] ?? jsonData['error'] ?? 'Internal server error';
+          throw ServerFailure('Server error (500): $errorMsg');
         case 502:
+          debugPrint('HttpClient: Bad gateway error (502)');
+          String errorMsg = jsonData['message'] ?? jsonData['error'] ?? 'Bad gateway';
+          throw ServerFailure('Server temporarily unavailable (502): $errorMsg');
         case 503:
-          throw ServerFailure(
-            jsonData['message'] ?? 'Server error',
-          );
+          debugPrint('HttpClient: Service unavailable error (503)');
+          String errorMsg = jsonData['message'] ?? jsonData['error'] ?? 'Service unavailable';
+          throw ServerFailure('Service temporarily unavailable (503): $errorMsg');
+        case 504:
+          debugPrint('HttpClient: Gateway timeout error (504)');
+          throw const ServerFailure('Server timeout (504) - Please try again later');
         default:
-          throw ServerFailure(
-            'HTTP ${response.statusCode}: ${jsonData['message'] ?? 'Unknown error'}',
-          );
+          debugPrint('HttpClient: Unexpected status code ${response.statusCode}');
+          String errorMsg = jsonData['message'] ?? jsonData['error'] ?? 'Unknown error';
+          throw ServerFailure('HTTP ${response.statusCode}: $errorMsg');
+      }
+      
+      // This should never be reached due to throws in all switch cases
+      throw ServerFailure('Unhandled response case');
+    } on FormatException catch (e) {
+      debugPrint('HttpClient: JSON parsing failed - $e');
+      debugPrint('HttpClient: Raw response body: $body');
+      
+      // Handle non-JSON error responses
+      if (response.statusCode == 429) {
+        throw const ServerFailure('Rate limit exceeded');
+      } else if (response.statusCode >= 500) {
+        throw ServerFailure('Server error (${response.statusCode})');
+      } else if (response.statusCode == 401) {
+        throw const ServerFailure('Unauthorized - Check API key');
+      } else if (response.statusCode == 403) {
+        throw const ServerFailure('Forbidden - API key may be invalid');
+      } else if (response.statusCode == 404) {
+        throw const ServerFailure('Vehicle not found');
+      } else {
+        throw ServerFailure('Failed to parse response (${response.statusCode}): $e');
       }
     } catch (e) {
-      if (e is Failure) rethrow;
-      throw ServerFailure('Failed to parse response: $e');
+      debugPrint('HttpClient: Response handling error - $e');
+      if (e is Failure) {
+        rethrow;
+      }
+      throw ServerFailure('Failed to handle response: $e');
     }
   }
 
+  /// Handle authentication-specific errors like in mynotes app
+  void _handleAuthenticationError(String errorMessage, int statusCode) {
+    debugPrint('HttpClient: Authentication error detected - $errorMessage');
+    
+    String lowerMsg = errorMessage.toLowerCase();
+    
+    if (lowerMsg.contains('api key') || lowerMsg.contains('invalid key')) {
+      throw const ServerFailure('Invalid API key - Please check your RapidAPI subscription');
+    } else if (lowerMsg.contains('subscription') || lowerMsg.contains('plan')) {
+      throw const ServerFailure('API subscription required - Please upgrade your RapidAPI plan');
+    } else if (lowerMsg.contains('quota') || lowerMsg.contains('limit')) {
+      throw const ServerFailure('API quota exceeded - Please check your usage limits');
+    } else if (lowerMsg.contains('expired') || lowerMsg.contains('token')) {
+      throw const ServerFailure('API token expired - Please renew your subscription');
+    } else {
+      throw ServerFailure('Authentication failed ($statusCode): $errorMessage');
+    }
+  }
+
+  /// Check if error indicates rate limiting like in mynotes app
+  bool _isRateLimitError(String errorMessage, int statusCode) {
+    if (statusCode == 429) return true;
+    
+    String lowerMsg = errorMessage.toLowerCase();
+    return lowerMsg.contains('rate limit') || 
+           lowerMsg.contains('too many requests') ||
+           lowerMsg.contains('throttled') ||
+           lowerMsg.contains('quota exceeded');
+  }
+
+  /// Check if error indicates network connectivity issues
+  bool _isNetworkError(String errorMessage) {
+    String lowerMsg = errorMessage.toLowerCase();
+    return lowerMsg.contains('network') ||
+           lowerMsg.contains('connection') ||
+           lowerMsg.contains('timeout') ||
+           lowerMsg.contains('unreachable') ||
+           lowerMsg.contains('dns');
+  }
+
   void dispose() {
+    debugPrint('HttpClient: Disposing HTTP client');
     _client.close();
   }
 }

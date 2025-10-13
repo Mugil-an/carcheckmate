@@ -4,6 +4,7 @@ import 'package:carcheckmate/domain/entities/car.dart';
 import 'package:carcheckmate/domain/repositories/checklist_repository.dart';
 import 'package:carcheckmate/data/models/checklist_item.dart';
 import 'package:carcheckmate/core/services/risk_calculator_service.dart';
+import '../../core/exceptions/checklist_exceptions.dart';
 
 part 'checklist_event.dart';
 part 'checklist_state.dart';
@@ -29,9 +30,18 @@ class ChecklistBloc extends Bloc<ChecklistEvent, ChecklistState> {
     try {
       if (event.car == null) {
         final cars = await _repository.getCarList();
+        if (cars.isEmpty) {
+          throw const CarListLoadFailedException();
+        }
         emit(state.copyWith(status: ChecklistStatus.loaded, carList: cars));
       } else {
         final carData = event.car!;
+        
+        // Validate car data
+        if (!carData.containsKey('brand') || !carData.containsKey('model') || !carData.containsKey('year')) {
+          throw const InvalidCarSelectionException();
+        }
+
         final car = await _repository.getCarByModelDetails(
           carData['brand'],
           carData['model'],
@@ -39,6 +49,10 @@ class ChecklistBloc extends Bloc<ChecklistEvent, ChecklistState> {
         );
         if (car != null) {
           final items = car.checklistItems;
+          if (items.isEmpty) {
+            throw const ChecklistDataNotFoundException();
+          }
+          
           final Map<String, bool> selections = {
             for (var item in items) item.issue: false // Start with all items unchecked (no problems)
           };
@@ -54,16 +68,18 @@ class ChecklistBloc extends Bloc<ChecklistEvent, ChecklistState> {
             riskScore: riskScore,
           ));
         } else {
-          emit(state.copyWith(
-            status: ChecklistStatus.error,
-            errorMessage: 'Failed to load checklist for this car',
-          ));
+          throw const CarDataNotFoundException();
         }
       }
+    } on ChecklistException catch (e) {
+      emit(state.copyWith(
+        status: ChecklistStatus.error,
+        errorMessage: e.message,
+      ));
     } catch (e) {
       emit(state.copyWith(
         status: ChecklistStatus.error,
-        errorMessage: 'Failed to load car list',
+        errorMessage: const GenericChecklistException().message,
       ));
     }
   }
@@ -79,6 +95,10 @@ class ChecklistBloc extends Bloc<ChecklistEvent, ChecklistState> {
 
     try {
       final items = event.selectedCar.checklistItems;
+      
+      if (items.isEmpty) {
+        throw const ChecklistDataNotFoundException();
+      }
 
       final Map<String, bool> selections = {
         for (var item in items) item.issue: false
@@ -95,27 +115,49 @@ class ChecklistBloc extends Bloc<ChecklistEvent, ChecklistState> {
         itemSelections: selections,
         riskScore: riskScore,
       ));
+    } on ChecklistException catch (e) {
+      emit(state.copyWith(
+        status: ChecklistStatus.error,
+        errorMessage: e.message,
+      ));
     } catch (e) {
       emit(state.copyWith(
         status: ChecklistStatus.error,
-        errorMessage: 'Failed to load checklist for this car',
+        errorMessage: const CarSelectionException().message,
       ));
     }
   }
 
   void _onToggleChecklistItem(
       ToggleChecklistItem event, Emitter<ChecklistState> emit) {
-    final newSelections = Map<String, bool>.from(state.itemSelections);
-    newSelections[event.issue] = event.selected;
+    try {
+      // Validate checklist item
+      if (!state.itemSelections.containsKey(event.issue)) {
+        throw const InvalidChecklistItemException();
+      }
 
-    final newScore = _riskService.calculateScore(
-      items: state.checklistItems,
-      selections: newSelections,
-    );
+      final newSelections = Map<String, bool>.from(state.itemSelections);
+      newSelections[event.issue] = event.selected;
 
-    emit(state.copyWith(
-      itemSelections: newSelections,
-      riskScore: newScore,
-    ));
+      final newScore = _riskService.calculateScore(
+        items: state.checklistItems,
+        selections: newSelections,
+      );
+
+      emit(state.copyWith(
+        itemSelections: newSelections,
+        riskScore: newScore,
+      ));
+    } on ChecklistException catch (e) {
+      emit(state.copyWith(
+        status: ChecklistStatus.error,
+        errorMessage: e.message,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        status: ChecklistStatus.error,
+        errorMessage: const RiskCalculationFailedException().message,
+      ));
+    }
   }
 }

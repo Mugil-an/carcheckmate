@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../widgets/common_background.dart';
 import '../../app/theme.dart';
+import '../../core/utils/enhanced_exception_handler.dart';
+import '../../core/exceptions/survey_exceptions.dart';
+import '../../core/exceptions/network_exceptions.dart';
 
 class SurveyFeedbackScreen extends StatefulWidget {
   const SurveyFeedbackScreen({super.key});
@@ -134,31 +137,103 @@ class _SurveyFeedbackScreenState extends State<SurveyFeedbackScreen> {
   }
 
   Future<void> _submitSurvey() async {
-    if (!_formKey.currentState!.validate()) return;
-    
-    if (_overallRating == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please provide an overall rating')),
-      );
-      return;
+    try {
+      // Validate form
+      if (!_formKey.currentState!.validate()) {
+        throw SurveyValidationException();
+      }
+      
+      // Validate required rating
+      if (_overallRating == 0) {
+        throw SurveyFieldRequiredException('Overall rating');
+      }
+
+      // Validate email format
+      if (_emailController.text.isNotEmpty && !_isValidEmail(_emailController.text)) {
+        throw InvalidEmailFormatException();
+      }
+
+      // Validate feedback length
+      if (_feedbackController.text.isNotEmpty) {
+        if (_feedbackController.text.trim().length < 10) {
+          throw FeedbackTooShortException();
+        }
+        if (_feedbackController.text.trim().length > 1000) {
+          throw FeedbackTooLongException();
+        }
+      }
+
+      setState(() => _isSubmitting = true);
+
+      // Prepare survey data
+      final surveyData = {
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'overallRating': _overallRating,
+        'appUsabilityRating': _appUsabilityRating,
+        'featureUsefulnessRating': _featureUsefulnessRating,
+        'selectedImprovement': _selectedImprovement,
+        'feedback': _feedbackController.text.trim(),
+        'timestamp': DateTime.now().toIso8601String(),
+      };
+
+      // Simulate API call with potential failures
+      await _performSurveySubmission(surveyData);
+
+      setState(() => _isSubmitting = false);
+
+      if (mounted) {
+        // Show success message using enhanced exception handler
+        await EnhancedExceptionHandler.showErrorDialog(
+          context,
+          title: 'Thank You!',
+          message: 'Your feedback has been submitted successfully. We appreciate your time and input.',
+          moduleName: 'Survey',
+          isRecoverable: true,
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      setState(() => _isSubmitting = false);
+      
+      if (mounted) {
+        if (e is SurveyException) {
+          await EnhancedExceptionHandler.handleException(context, e);
+        } else {
+          await EnhancedExceptionHandler.handleException(
+            context, 
+            GenericSurveyException('Failed to submit survey. Please try again.'),
+          );
+        }
+      }
     }
+  }
 
-    setState(() => _isSubmitting = true);
-
-    // Simulate API call
+  Future<void> _performSurveySubmission(Map<String, dynamic> surveyData) async {
+    // Simulate network delay
     await Future.delayed(const Duration(seconds: 2));
-
-    setState(() => _isSubmitting = false);
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Thank you for your feedback!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context);
+    
+    // Simulate potential failures (for demonstration)
+    if (surveyData['email'] == 'test@error.com') {
+      throw SurveySubmissionException();
     }
+    
+    // Simulate network errors
+    if (surveyData['name'] == 'NetworkError') {
+      throw NoInternetConnectionException();
+    }
+    
+    // Simulate rate limiting
+    if (surveyData['feedback'].toString().toLowerCase().contains('spam')) {
+      throw SurveyRateLimitException();
+    }
+    
+    // Success case - in real implementation, this would make actual API call
+    debugPrint('Survey submitted successfully: $surveyData');
+  }
+
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
   @override
@@ -219,6 +294,7 @@ class _SurveyFeedbackScreenState extends State<SurveyFeedbackScreen> {
                       hintText: 'Enter your name',
                       validator: (value) {
                         if (value?.isEmpty ?? true) return 'Name is required';
+                        if (value!.trim().length < 2) return 'Name must be at least 2 characters';
                         return null;
                       },
                     ),
@@ -226,10 +302,11 @@ class _SurveyFeedbackScreenState extends State<SurveyFeedbackScreen> {
                     _buildTextInput(
                       label: 'Email',
                       controller: _emailController,
-                      hintText: 'Enter your email',
+                      hintText: 'Enter your email (optional)',
                       validator: (value) {
-                        if (value?.isEmpty ?? true) return 'Email is required';
-                        if (!value!.contains('@')) return 'Enter a valid email';
+                        if (value?.isNotEmpty ?? false) {
+                          if (!_isValidEmail(value!)) return 'Enter a valid email address';
+                        }
                         return null;
                       },
                     ),

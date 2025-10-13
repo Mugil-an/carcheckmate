@@ -5,6 +5,7 @@ import '../../logic/vehicle_verification/vehicle_verification_event.dart';
 import '../widgets/vehicle_details_card.dart';
 import '../widgets/vehicle_search_bar.dart';
 import '../widgets/common_background.dart';
+import '../../core/utils/exception_handler.dart';
 
 class RtoLienVerificationScreen extends StatelessWidget {
   const RtoLienVerificationScreen({super.key});
@@ -49,7 +50,20 @@ class RtoLienVerificationScreen extends StatelessWidget {
               ),
           const SizedBox(height: 16),
           Expanded(
-            child: BlocBuilder<VehicleVerificationBloc, VehicleVerificationState>(
+            child: BlocConsumer<VehicleVerificationBloc, VehicleVerificationState>(
+              listener: (context, state) {
+                if (state is VehicleVerificationError) {
+                  ExceptionHandler.handleError(
+                    context,
+                    state.message,
+                    title: 'Vehicle Verification Error',
+                    actionText: 'Retry',
+                    onAction: () {
+                      context.read<VehicleVerificationBloc>().add(ResetVehicleVerification());
+                    },
+                  );
+                }
+              },
               builder: (context, state) {
                 if (state is VehicleVerificationInitial) {
                   return const Center(

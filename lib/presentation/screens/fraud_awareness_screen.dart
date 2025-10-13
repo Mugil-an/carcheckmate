@@ -2,6 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../widgets/common_background.dart';
 import '../../app/theme.dart';
+import '../../core/utils/enhanced_exception_handler.dart';
+import '../../core/exceptions/fraud_awareness_exceptions.dart';
 
 // --- Data Model for Content ---
 class FraudContent {
@@ -27,42 +29,240 @@ class FraudAwarenessScreen extends StatefulWidget {
 }
 
 class _FraudAwarenessScreenState extends State<FraudAwarenessScreen> {
-  // Define the list of all content items
-  final List<FraudContent> contents = const [
-    FraudContent(
-      title: "Odometer Tampering",
-      briefDescription: "Misaligned digits, inconsistent service kms, wear not matching the mileage.",
-      fullDescription: "This refers to the illegal practice of rolling back a vehicle's odometer to display a lower mileage. Look for misaligned digits on older mechanical odometers, inconsistencies between current mileage and service records, and excessive wear on the steering wheel or pedals that doesn't match the low mileage reading.",
-      icon: Icons.shield_outlined,
-    ),
-    FraudContent(
-      title: "Accident/Panel Repaint",
-      briefDescription: "Shade differences, overspray near rubber trims, uneven panel gaps.",
-      fullDescription: "Inspect the vehicle closely for signs of undisclosed accident repair. Indicators include shade differences between body panels, paint overspray visible on rubber trims or plastic parts, and inconsistent or wide gaps between fenders, doors, and hood/trunk. Use a paint thickness gauge if possible.",
-      icon: Icons.shield_outlined,
-    ),
-    FraudContent(
-      title: "Flood Damage",
-      briefDescription: "Musty smell, silt under seats, corrosion on seat rails, water lines in boot.",
-      fullDescription: "Hidden water damage can lead to electrical failure and extensive rust. Check for a persistent musty smell, silt or mud residue in hard-to-clean areas (like under seats or in the trunk), and corrosion on unexposed metal components like seat mounting rails.",
-      icon: Icons.shield_outlined,
-    ),
-    FraudContent(
-      title: "VIN/RC Mismatch",
-      briefDescription: "Ensure stamped VIN matches RC and windscreen plate.",
-      fullDescription: "The Vehicle Identification Number (VIN) must match across all documents and physical stamps. Verify the VIN on the chassis, the windscreen plate, and the Registration Certificate (RC). A mismatch suggests the car may be stolen or illegally modified.",
-      icon: Icons.shield_outlined,
-    ),
-  ];
-
-  // State variable to hold the index of the currently selected/expanded content
+  // State variables
   int? _selectedIndex;
+  bool _isLoading = true;
+  bool _hasError = false;
+  List<FraudContent> _contents = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFraudAwarenessContent();
+  }
+
+  // Simulate loading fraud awareness content (in real app, this would load from API/database)
+  Future<void> _loadFraudAwarenessContent() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _hasError = false;
+      });
+
+      // Simulate API delay
+      await Future.delayed(const Duration(seconds: 1));
+
+      // Simulate potential loading errors
+      if (DateTime.now().millisecond % 10 == 0) {
+        throw FraudContentLoadFailedException();
+      }
+
+      // Load content
+      final loadedContents = [
+        const FraudContent(
+          title: "Odometer Tampering",
+          briefDescription: "Misaligned digits, inconsistent service kms, wear not matching the mileage.",
+          fullDescription: "This refers to the illegal practice of rolling back a vehicle's odometer to display a lower mileage. Look for misaligned digits on older mechanical odometers, inconsistencies between current mileage and service records, and excessive wear on the steering wheel or pedals that doesn't match the low mileage reading.",
+          icon: Icons.speed,
+        ),
+        const FraudContent(
+          title: "Accident/Panel Repaint",
+          briefDescription: "Shade differences, overspray near rubber trims, uneven panel gaps.",
+          fullDescription: "Inspect the vehicle closely for signs of undisclosed accident repair. Indicators include shade differences between body panels, paint overspray visible on rubber trims or plastic parts, and inconsistent or wide gaps between fenders, doors, and hood/trunk. Use a paint thickness gauge if possible.",
+          icon: Icons.build,
+        ),
+        const FraudContent(
+          title: "Flood Damage",
+          briefDescription: "Musty smell, silt under seats, corrosion on seat rails, water lines in boot.",
+          fullDescription: "Hidden water damage can lead to electrical failure and extensive rust. Check for a persistent musty smell, silt or mud residue in hard-to-clean areas (like under seats or in the trunk), and corrosion on unexposed metal components like seat mounting rails.",
+          icon: Icons.water_damage,
+        ),
+        const FraudContent(
+          title: "VIN/RC Mismatch",
+          briefDescription: "Ensure stamped VIN matches RC and windscreen plate.",
+          fullDescription: "The Vehicle Identification Number (VIN) must match across all documents and physical stamps. Verify the VIN on the chassis, the windscreen plate, and the Registration Certificate (RC). A mismatch suggests the car may be stolen or illegally modified.",
+          icon: Icons.assignment_late,
+        ),
+        const FraudContent(
+          title: "Engine/Transmission Issues",
+          briefDescription: "Unusual noises, rough idling, fluid leaks, delayed shifting.",
+          fullDescription: "Major mechanical issues are often hidden during sales. Listen for knocking sounds from the engine, check for smooth idling, inspect for oil or coolant leaks, and test automatic transmission shifting patterns. These issues can cost thousands to repair.",
+          icon: Icons.settings,
+        ),
+      ];
+
+      if (mounted) {
+        setState(() {
+          _contents = loadedContents;
+          _isLoading = false;
+          _hasError = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+        });
+
+        if (e is FraudAwarenessException) {
+          await EnhancedExceptionHandler.handleException(context, e);
+        } else {
+          await EnhancedExceptionHandler.handleException(
+            context, 
+            GenericFraudAwarenessException('Failed to load fraud awareness content.'),
+          );
+        }
+      }
+    }
+  }
 
   // Function to handle card tap: toggle the selected index
   void _selectContent(int index) {
-    setState(() {
-      _selectedIndex = _selectedIndex == index ? null : index;
-    });
+    try {
+      if (index < 0 || index >= _contents.length) {
+        throw FraudContentNavigationException();
+      }
+      
+      setState(() {
+        _selectedIndex = _selectedIndex == index ? null : index;
+      });
+    } catch (e) {
+      if (e is FraudAwarenessException) {
+        EnhancedExceptionHandler.handleException(context, e);
+      }
+    }
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Loading fraud awareness content...',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_hasError || _contents.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red.withOpacity(0.7),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Failed to load fraud awareness content',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Please check your connection and try again',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _loadFraudAwarenessContent,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white.withOpacity(0.9),
+                foregroundColor: AppColors.primaryDark,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        // Header with tips
+        Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.2)),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                color: Colors.blue.withOpacity(0.8),
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Fraud Prevention Tips',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Tap each item below to learn how to identify common car fraud tactics.',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        // Content list
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: _contents.length,
+            itemBuilder: (context, index) {
+              final content = _contents[index];
+              return AccordionFraudCard(
+                content: content,
+                index: index,
+                onTap: _selectContent,
+                isExpanded: index == _selectedIndex,
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -73,19 +273,7 @@ class _FraudAwarenessScreenState extends State<FraudAwarenessScreen> {
         appBar: const CommonAppBar(
           title: "Fraud Awareness",
         ),
-        body: ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-          itemCount: contents.length,
-          itemBuilder: (context, index) {
-            final content = contents[index];
-            return AccordionFraudCard(
-              content: content,
-              index: index,
-              onTap: _selectContent,
-              isExpanded: index == _selectedIndex,
-            );
-          },
-        ),
+        body: _buildBody(),
       ),
     );
   }

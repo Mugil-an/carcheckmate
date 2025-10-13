@@ -5,6 +5,7 @@ import '../../logic/auth/auth_bloc.dart';
 import '../../logic/auth/auth_event.dart';
 import '../../logic/auth/auth_state.dart';
 import '../../app/theme.dart';
+import '../../core/utils/exception_handler.dart';
 import 'common_background.dart';
 
 class AuthGuard extends StatefulWidget {
@@ -41,7 +42,25 @@ class _AuthGuardState extends State<AuthGuard> {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
         // Handle navigation on state changes
-        if (state is Unauthenticated || state is AuthError) {
+        if (state is AuthError) {
+          // Show error dialog for authentication errors
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            await ExceptionHandler.handleError(
+              context,
+              state.message,
+              title: 'Authentication Error',
+              customMessage: state.message,
+              actionText: 'Go to Login',
+              onAction: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/login',
+                  (route) => false,
+                );
+              },
+            );
+          });
+        } else if (state is Unauthenticated) {
           // User is not authenticated, redirect to login
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (Navigator.canPop(context)) {

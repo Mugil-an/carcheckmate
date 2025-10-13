@@ -6,6 +6,7 @@ import 'package:carcheckmate/logic/auth/auth_bloc.dart';
 import 'package:carcheckmate/logic/auth/auth_event.dart';
 import 'package:carcheckmate/logic/auth/auth_state.dart';
 import '../../widgets/common_background.dart';
+import '../../../core/utils/exception_handler.dart';
 import '../../../app/theme.dart';
 class HomeScreen extends StatefulWidget {
   static const routeName = '/';
@@ -88,14 +89,40 @@ class _HomeScreenState extends State<HomeScreen> {
                   context: context,
                   icon: Icons.checklist,
                   title: 'Start Checklist',
-                  onTap: () => Navigator.pushNamed(context, '/checklist'),
+                  onTap: () async {
+                    try {
+                      await Navigator.pushNamed(context, '/checklist');
+                    } catch (e) {
+                      if (mounted) {
+                        ExceptionHandler.handleError(
+                          context,
+                          e,
+                          title: 'Navigation Error',
+                          customMessage: 'Unable to open checklist. Please try again.',
+                        );
+                      }
+                    }
+                  },
                 ),
                 const SizedBox(height: 20),
                 _buildActionButton(
                   context: context,
                   icon: Icons.upload_file,
                   title: 'Upload Service History (OCR)',
-                  onTap: () => Navigator.pushNamed(context, '/ocr'),
+                  onTap: () async {
+                    try {
+                      await Navigator.pushNamed(context, '/ocr');
+                    } catch (e) {
+                      if (mounted) {
+                        ExceptionHandler.handleError(
+                          context,
+                          e,
+                          title: 'Navigation Error',
+                          customMessage: 'Unable to open OCR screen. Please try again.',
+                        );
+                      }
+                    }
+                  },
                   isPrimary: false,
                 ),
               ],
@@ -227,51 +254,117 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildDrawerItem(
             icon: Icons.checklist,
             title: 'Checklist',
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/checklist');
+              try {
+                await Navigator.pushNamed(context, '/checklist');
+              } catch (e) {
+                if (mounted) {
+                  ExceptionHandler.handleError(
+                    context,
+                    e,
+                    title: 'Navigation Error',
+                    customMessage: 'Unable to open checklist. Please try again.',
+                  );
+                }
+              }
             },
           ),
           _buildDrawerItem(
             icon: Icons.upload_file,
             title: 'Upload OCR',
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/ocr');
+              try {
+                await Navigator.pushNamed(context, '/ocr');
+              } catch (e) {
+                if (mounted) {
+                  ExceptionHandler.handleError(
+                    context,
+                    e,
+                    title: 'Navigation Error',
+                    customMessage: 'Unable to open OCR screen. Please try again.',
+                  );
+                }
+              }
             },
           ),
           _buildDrawerItem(
             icon: Icons.assignment,
             title: 'RTO / Lien',
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/rto');
+              try {
+                await Navigator.pushNamed(context, '/rto');
+              } catch (e) {
+                if (mounted) {
+                  ExceptionHandler.handleError(
+                    context,
+                    e,
+                    title: 'Navigation Error',
+                    customMessage: 'Unable to open RTO verification. Please try again.',
+                  );
+                }
+              }
             },
           ),
           _buildDrawerItem(
             icon: Icons.security,
             title: 'Fraud Education',
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/fraud-awareness');
+              try {
+                await Navigator.pushNamed(context, '/fraud-awareness');
+              } catch (e) {
+                if (mounted) {
+                  ExceptionHandler.handleError(
+                    context,
+                    e,
+                    title: 'Navigation Error',
+                    customMessage: 'Unable to open fraud education. Please try again.',
+                  );
+                }
+              }
             },
           ),
           _buildDrawerItem(
             icon: Icons.poll,
             title: 'Survey & Feedback',
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/survey');
+              try {
+                await Navigator.pushNamed(context, '/survey');
+              } catch (e) {
+                if (mounted) {
+                  ExceptionHandler.handleError(
+                    context,
+                    e,
+                    title: 'Navigation Error',
+                    customMessage: 'Unable to open survey. Please try again.',
+                  );
+                }
+              }
             },
           ),
           const Spacer(),
           _buildDrawerItem(
             icon: Icons.exit_to_app,
             title: 'Sign out',
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              context.read<AuthBloc>().add(AuthLogout());
-              Navigator.pushReplacementNamed(context, '/login');
+              try {
+                context.read<AuthBloc>().add(AuthLogout());
+                await Navigator.pushReplacementNamed(context, '/login');
+              } catch (e) {
+                if (mounted) {
+                  ExceptionHandler.handleError(
+                    context,
+                    e,
+                    title: 'Logout Error',
+                    customMessage: 'Unable to logout properly. Please try again.',
+                  );
+                }
+              }
             },
           ),
           const SizedBox(height: 16),

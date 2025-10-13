@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../logic/checklist/checklist_bloc.dart';
 import '../../widgets/common_background.dart';
 import '../widgets/risk_meter.dart';
+import '../../../core/utils/exception_handler.dart';
 import '../../../app/theme.dart';
 
 class ChecklistScreen extends StatefulWidget {
@@ -29,7 +30,20 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: const CommonAppBar(title: 'Vehicle Checklist'),
-        body: BlocBuilder<ChecklistBloc, ChecklistState>(
+        body: BlocConsumer<ChecklistBloc, ChecklistState>(
+          listener: (context, state) {
+            if (state.status == ChecklistStatus.error) {
+              ExceptionHandler.handleError(
+                context,
+                state.errorMessage ?? 'An error occurred while loading checklist data',
+                title: 'Checklist Error',
+                actionText: 'Retry',
+                onAction: () {
+                  context.read<ChecklistBloc>().add(LoadInitialData());
+                },
+              );
+            }
+          },
           builder: (context, state) {
             if (state.status == ChecklistStatus.loading) {
               return const Center(
@@ -41,9 +55,31 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
             
             if (state.status == ChecklistStatus.error) {
               return Center(
-                child: Text(
-                  state.errorMessage ?? "Error loading",
-                  style: const TextStyle(color: Colors.white),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.white54,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Error loading checklist',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<ChecklistBloc>().add(LoadInitialData());
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
                 ),
               );
             }
@@ -55,8 +91,25 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                   Container(
                     margin: const EdgeInsets.all(16.0),
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/car_selection');
+                      onPressed: () async {
+                        try {
+                          final result = await Navigator.pushNamed(context, '/car_selection');
+                          // If car was selected, the bloc should already be updated
+                          // But let's add some debugging and error recovery
+                          if (mounted && result == null) {
+                            // User might have canceled selection
+                            debugPrint('Car selection was canceled or no car was selected');
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ExceptionHandler.handleError(
+                              context,
+                              e,
+                              title: 'Navigation Error',
+                              customMessage: 'Failed to open car selection. Please try again.',
+                            );
+                          }
+                        }
                       },
                       icon: const Icon(Icons.directions_car),
                       label: Text(
@@ -77,8 +130,8 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                   ),
                 ],
                 
-                // Risk Meter - shown when checklist is loaded
-                if (state.selectedCar != null && state.checklistItems.isNotEmpty) ...[
+                // Risk Meter - shown when car is selected and risk score is available
+                if (state.selectedCar != null && state.status == ChecklistStatus.loaded) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: RiskMeter(score: state.riskScore),
@@ -150,10 +203,13 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
       );
     }
     
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: state.checklistItems.length,
-      itemBuilder: (context, index) {
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16.0),
+            itemCount: state.checklistItems.length,
+            itemBuilder: (context, index) {
         final item = state.checklistItems[index];
         final isSelected = state.itemSelections[item.issue] ?? false;
         
@@ -172,12 +228,21 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
           child: CheckboxListTile(
             value: isSelected,
             onChanged: (bool? value) {
-              context.read<ChecklistBloc>().add(
-                ToggleChecklistItem(
-                  issue: item.issue,
-                  selected: value ?? false,
-                ),
-              );
+              try {
+                context.read<ChecklistBloc>().add(
+                  ToggleChecklistItem(
+                    issue: item.issue,
+                    selected: value ?? false,
+                  ),
+                );
+              } catch (e) {
+                ExceptionHandler.handleError(
+                  context,
+                  e,
+                  title: 'Checklist Update Error',
+                  customMessage: 'Failed to update checklist item. Please try again.',
+                );
+              }
             },
             title: Text(
               item.issue,
@@ -234,6 +299,61 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
             controlAffinity: ListTileControlAffinity.trailing,
           ),
         );
+      },
+    ),
+        ),
+        // Risk Score Button
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton.icon(
+            onPressed: () {
+              try {
+                _showRiskScoreDialog(state);
+              } catch (e) {
+                ExceptionHandler.handleError(
+                  context,
+                  e,
+                  title: 'Risk Score Error',
+                  customMessage: 'Failed to display risk score. Please try again.',
+                );
+              }
+            },
+            icon: const Icon(Icons.analytics_outlined),
+            label: Text(
+              'View Risk Score (${state.riskScore.toStringAsFixed(1)})',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 4,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showRiskScoreDialog(ChecklistState state) {
+    final selectedIssues = state.itemSelections.entries
+        .where((entry) => entry.value == true)
+        .map((entry) => entry.key)
+        .toList();
+    
+    ExceptionHandler.showSuccessDialog(
+      context,
+      title: 'Vehicle Risk Assessment',
+      message: selectedIssues.isEmpty 
+          ? 'Great! No issues detected.\nRisk Score: ${state.riskScore.toStringAsFixed(1)}/100'
+          : 'Issues detected: ${selectedIssues.length}\nRisk Score: ${state.riskScore.toStringAsFixed(1)}/100\n\nSelected Issues:\n• ${selectedIssues.join('\n• ')}',
+      actionText: 'OK',
+      onAction: () {
+        Navigator.of(context).pop();
       },
     );
   }
