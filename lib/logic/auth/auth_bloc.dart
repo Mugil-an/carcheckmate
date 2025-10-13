@@ -74,5 +74,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _repository.signOut();
       emit(Unauthenticated());
     });
+
+    on<AuthCheckCurrent>((event, emit) async {
+      try {
+        final user = _repository.currentUser;
+        if (user != null && user.emailVerified) {
+          emit(Authenticated(user));
+        } else {
+          emit(Unauthenticated());
+        }
+      } catch (e) {
+        emit(Unauthenticated());
+      }
+    });
   }
 }

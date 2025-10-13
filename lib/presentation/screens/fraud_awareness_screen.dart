@@ -1,5 +1,7 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../widgets/common_background.dart';
+import '../../app/theme.dart';
 
 // --- Data Model for Content ---
 class FraudContent {
@@ -72,7 +74,7 @@ class _FraudAwarenessScreenState extends State<FraudAwarenessScreen> {
           title: "Fraud Awareness",
         ),
         body: ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
           itemCount: contents.length,
           itemBuilder: (context, index) {
             final content = contents[index];
@@ -106,95 +108,149 @@ class AccordionFraudCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 3,
-      color: Colors.white.withOpacity(0.95),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: isExpanded 
-            ? const BorderSide(color: Color(0xFF2E3A59), width: 2.0)
-            : BorderSide.none,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isExpanded 
+              ? AppColors.accentLightest.withOpacity(0.7)
+              : AppColors.textSecondary.withOpacity(0.4),
+          width: isExpanded ? 2.0 : 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryDark.withOpacity(0.2),
+            blurRadius: 20,
+            spreadRadius: 2,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: -5,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
-      child: InkWell(
-        onTap: () => onTap(index),
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Section (Always Visible)
-            ListTile(
-              leading: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2E3A59),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    (index + 1).toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-              ),
-              title: Text(
-                content.title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2E3A59),
-                  fontSize: 16,
-                ),
-              ),
-              subtitle: Text(
-                content.briefDescription,
-                style: const TextStyle(
-                  color: Colors.black87,
-                  fontSize: 14,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              trailing: Icon(
-                isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                color: const Color(0xFF2E3A59),
-              ),
-              contentPadding: const EdgeInsets.only(
-                top: 8,
-                bottom: 8,
-                left: 16,
-                right: 16,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.3),
+                  Colors.white.withOpacity(0.05),
+                  AppColors.accentLightest.withOpacity(0.1),
+                ],
+                stops: const [0.0, 0.6, 1.0],
               ),
             ),
-
-            // Expanded Section (Detailed Description)
-            if (isExpanded)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => onTap(index),
+                borderRadius: BorderRadius.circular(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Divider(
-                      color: const Color(0xFF2E3A59).withOpacity(0.3),
-                      height: 1,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      content.fullDescription,
-                      style: const TextStyle(
-                        color: Colors.black87,
-                        fontSize: 15,
-                        height: 1.5,
+                    // Top Section (Always Visible)
+                    ListTile(
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppColors.accentLightest,
+                              AppColors.accent,
+                            ],
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.accent.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            (index + 1).toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                      title: Text(
+                        content.title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white.withOpacity(0.95),
+                          fontSize: 16,
+                        ),
+                      ),
+                      subtitle: Text(
+                        content.briefDescription,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 14,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: Icon(
+                        isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                      contentPadding: const EdgeInsets.only(
+                        top: 8,
+                        bottom: 8,
+                        left: 16,
+                        right: 16,
                       ),
                     ),
+
+                    // Expanded Section (Detailed Description)
+                    if (isExpanded)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Divider(
+                              color: AppColors.accentLightest.withOpacity(0.4),
+                              height: 1,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              content.fullDescription,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 15,
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),
-          ],
+            ),
+          ),
         ),
       ),
     );

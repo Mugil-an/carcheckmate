@@ -97,6 +97,25 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
     );
   }
   
+  // Helper method to get severity color
+  Color _getSeverityColor(String severity) {
+    switch (severity.toLowerCase()) {
+      case 'low':
+        return Colors.green[600] ?? Colors.green;
+      case 'medium':
+        return Colors.orange[600] ?? Colors.orange;
+      case 'high':
+        return Colors.red[600] ?? Colors.red;
+      default:
+        return Colors.grey[600] ?? Colors.grey;
+    }
+  }
+  
+  // Helper method to get cost color based on amount
+  Color _getCostColor(int cost) {
+    return Colors.grey[600] ?? Colors.grey;
+  }
+  
   Widget _buildChecklistContent(ChecklistState state) {
     if (state.selectedCar == null) {
       return const Center(
@@ -145,8 +164,9 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected 
-                  ? Colors.red.withOpacity(0.5) 
+                  ? AppColors.primaryDark
                   : Colors.white.withOpacity(0.1),
+              width: isSelected ? 2 : 1,
             ),
           ),
           child: CheckboxListTile(
@@ -162,20 +182,50 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
             title: Text(
               item.issue,
               style: TextStyle(
-                color: isSelected ? Colors.red[300] : Colors.white,
+                color: isSelected ? AppColors.primaryDark : Colors.white,
                 fontWeight: FontWeight.w500,
               ),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 4),
-                Text(
-                  'Severity: ${item.severity} • Cost: ₹${item.estimatedCost}',
-                  style: TextStyle(
-                    color: isSelected ? Colors.red[200] : Colors.white70,
-                    fontSize: 12,
-                  ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    // Severity Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _getSeverityColor(item.severity),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        item.severity.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Cost Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _getCostColor(item.estimatedCost),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '₹${item.estimatedCost}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

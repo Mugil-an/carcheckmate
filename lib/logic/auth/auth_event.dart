@@ -22,3 +22,5 @@ class AuthForgotPassword extends AuthEvent {
 }
 
 class AuthLogout extends AuthEvent {}
+
+class AuthCheckCurrent extends AuthEvent {}

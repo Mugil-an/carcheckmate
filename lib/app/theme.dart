@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 // Beautiful gradient-inspired brand colors from design
 class AppColors {
   // Primary brand colors - Beautiful blue gradient
-  static const Color primaryDark = Color(0xFF001D39);      // Darkest navy (001D39)
+  static const Color primaryDark = Color(0xFF021728);      // Darkest navy (001D39)
   static const Color primaryMedium = Color(0xFF0A4174);     // Medium blue (0A4174)  
   static const Color primaryLight = Color(0xFF49769F);      // Light blue (49769F)
   
