@@ -33,22 +33,12 @@ class _RiskMeterState extends State<RiskMeter> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // optional logo above title (images/carcheckmate_logo.png)
-        SizedBox(
-          height: 36,
-          child: Image.asset(
-            'assets/images/carcheckmate_logo.png',
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-          ),
-        ),
-        const SizedBox(height: 6),
         Text(
           'Vehicle Risk Score',
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Theme.of(context).textTheme.bodyLarge?.color?.withAlpha(220),
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 10),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/common_background.dart';
+import '../../app/theme.dart';
 
 class SurveyFeedbackScreen extends StatefulWidget {
   const SurveyFeedbackScreen({super.key});
@@ -344,11 +345,12 @@ class _SurveyFeedbackScreenState extends State<SurveyFeedbackScreen> {
                 child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _submitSurvey,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF2E3A59),
-                    elevation: 2,
+                    backgroundColor: Colors.white.withOpacity(0.95),
+                    foregroundColor: AppColors.primaryDark,
+                    elevation: 4,
+                    shadowColor: Colors.black26,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                   child: _isSubmitting

@@ -97,7 +97,7 @@ class ProfessionalButton extends StatelessWidget {
     if (isPrimary) {
       return Container(
         decoration: BoxDecoration(
-          gradient: AppColors.accentGradient,
+          gradient: AppColors.buttonGradient,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(

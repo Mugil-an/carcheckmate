@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../widgets/common_background.dart';
 import '../rto_lien_verification_screen.dart';
+import '../../../app/theme.dart';
 
 class RTOScreen extends StatefulWidget {
   const RTOScreen({super.key});
@@ -161,9 +162,10 @@ class _RTOScreenState extends State<RTOScreen> {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF2E3A59),
-                      elevation: 2,
+                      backgroundColor: Colors.white.withOpacity(0.95),
+                      foregroundColor: AppColors.primaryDark,
+                      elevation: 4,
+                      shadowColor: Colors.black26,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),

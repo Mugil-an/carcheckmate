@@ -16,20 +16,20 @@ class AppBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        gradient: AppColors.primaryGradient,
+        gradient: AppColors.backgroundGradient,
       ),
       child: Container(
         decoration: BoxDecoration(
-          // Add subtle noise/texture overlay for professional look
+          // Add subtle overlay for depth
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
-              Colors.white.withOpacity(0.02),
+              Colors.white.withOpacity(0.05),
               Colors.transparent,
-              Colors.black.withOpacity(0.05),
+              Colors.black.withOpacity(0.10),
             ],
-            stops: const [0.0, 0.5, 1.0],
+            stops: const [0.0, 0.3, 1.0],
           ),
         ),
         child: child,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/vehicle_verification/vehicle_verification_bloc.dart';
 import '../../logic/vehicle_verification/vehicle_verification_event.dart';
+import '../../app/theme.dart';
 
 class VehicleSearchBar extends StatefulWidget {
   const VehicleSearchBar({super.key});
@@ -113,9 +114,10 @@ class _VehicleSearchBarState extends State<VehicleSearchBar> {
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF2E3A59),
-              elevation: 2,
+              backgroundColor: Colors.white.withOpacity(0.95),
+              foregroundColor: AppColors.primaryDark,
+              elevation: 4,
+              shadowColor: Colors.black26,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),

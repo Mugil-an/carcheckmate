@@ -6,6 +6,7 @@ import 'package:carcheckmate/logic/auth/auth_bloc.dart';
 import 'package:carcheckmate/logic/auth/auth_event.dart';
 import 'package:carcheckmate/logic/auth/auth_state.dart';
 import '../../widgets/common_background.dart';
+import '../../../app/theme.dart';
 class HomeScreen extends StatefulWidget {
   static const routeName = '/';
   const HomeScreen({super.key});
@@ -123,12 +124,13 @@ class _HomeScreenState extends State<HomeScreen> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: isPrimary ? Colors.white : Colors.transparent,
-          foregroundColor: isPrimary ? const Color(0xFF2E3A59) : Colors.white,
-          elevation: isPrimary ? 2 : 0,
-          side: isPrimary ? null : const BorderSide(color: Colors.white, width: 1),
+          backgroundColor: isPrimary ? Colors.white.withOpacity(0.95) : Colors.transparent,
+          foregroundColor: isPrimary ? AppColors.primaryDark : Colors.white,
+          elevation: isPrimary ? 4 : 0,
+          shadowColor: isPrimary ? Colors.black26 : null,
+          side: isPrimary ? null : BorderSide(color: AppColors.accentLightest, width: 2),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
       ),
@@ -137,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildDrawer(BuildContext context) {
     return Drawer(
-      backgroundColor: const Color(0xFF1A2332),
+      backgroundColor: AppColors.primaryMedium,
       child: Column(
         children: [
           BlocBuilder<AuthBloc, AuthState>(
@@ -153,8 +155,8 @@ class _HomeScreenState extends State<HomeScreen> {
               }
               
               return DrawerHeader(
-                decoration: const BoxDecoration(
-                  color: Color(0xFF2E3A59),
+                decoration: BoxDecoration(
+                  gradient: AppColors.cardGradient,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

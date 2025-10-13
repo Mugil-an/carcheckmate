@@ -1,49 +1,62 @@
 // lib/app/theme.dart
 import 'package:flutter/material.dart';
 
-// Professional CarCheckMate brand colors
+// Beautiful gradient-inspired brand colors from design
 class AppColors {
-  // Primary brand colors - Professional blue gradient
-  static const Color primaryDark = Color(0xFF1B263B);      // Deep navy blue
-  static const Color primaryMedium = Color(0xFF415A77);     // Steel blue  
-  static const Color primaryLight = Color(0xFF778DA9);      // Light steel blue
+  // Primary brand colors - Beautiful blue gradient
+  static const Color primaryDark = Color(0xFF001D39);      // Darkest navy (001D39)
+  static const Color primaryMedium = Color(0xFF0A4174);     // Medium blue (0A4174)  
+  static const Color primaryLight = Color(0xFF49769F);      // Light blue (49769F)
   
-  // Accent colors
-  static const Color accent = Color(0xFF0D7377);            // Professional teal
-  static const Color accentLight = Color(0xFF14A085);       // Light teal
+  // Accent colors - Teal gradient
+  static const Color accent = Color(0xFF4E8EA2);            // Teal accent (4E8EA2)
+  static const Color accentLight = Color(0xFF6EA2B3);       // Light teal (6EA2B3)
+  static const Color accentLightest = Color(0xFF7BBDE8);    // Lightest blue (7BBDE8)
+  
+  // Status colors
   static const Color success = Color(0xFF2ECC71);           // Success green
   static const Color warning = Color(0xFFF39C12);           // Warning orange
   static const Color error = Color(0xFFE74C3C);             // Error red
   
   // Text colors
   static const Color textPrimary = Color(0xFFFFFFFF);       // Pure white
-  static const Color textSecondary = Color(0xFFE8F4F8);     // Light blue-white
-  static const Color textMuted = Color(0xFFB8C6DB);         // Muted blue-gray
-  static const Color textDark = Color(0xFF2C3E50);          // Dark text for light backgrounds
+  static const Color textSecondary = Color(0xFFBDD8E9);     // Light blue-white (BDD8E9)
+  static const Color textMuted = Color(0xFF7BBDE8);         // Muted blue (7BBDE8)
+  static const Color textDark = Color(0xFF001D39);          // Dark text for light backgrounds
   
-  // Surface colors
-  static const Color cardBackground = Color(0xFF243447);     // Card background
-  static const Color surfaceElevated = Color(0xFF2A3F54);   // Elevated surfaces
-  static const Color borderColor = Color(0xFF3A4F66);       // Subtle borders
-  static const Color dividerColor = Color(0xFF3A4F66);      // Dividers
+  // Surface colors - Based on gradient
+  static const Color cardBackground = Color(0xFF0A4174);     // Card background
+  static const Color surfaceElevated = Color(0xFF4E8EA2);   // Elevated surfaces
+  static const Color borderColor = Color(0xFF6EA2B3);       // Subtle borders
+  static const Color dividerColor = Color(0xFF7BBDE8);      // Dividers
   
-  // Gradient definitions for professional look
+  // Beautiful gradient definitions based on design
   static const LinearGradient primaryGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [primaryDark, primaryMedium],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [primaryDark, primaryMedium, primaryLight],
+    stops: [0.0, 0.5, 1.0],
+  );
+  
+  static const LinearGradient backgroundGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [primaryDark, primaryMedium, accent, accentLight, accentLightest, textSecondary],
+    stops: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
   );
   
   static const LinearGradient cardGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [cardBackground, surfaceElevated],
+    colors: [cardBackground, accent],
+    stops: [0.0, 1.0],
   );
   
-  static const LinearGradient accentGradient = LinearGradient(
+  static const LinearGradient buttonGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [accent, accentLight],
+    colors: [accentLightest, textSecondary],
+    stops: [0.0, 1.0],
   );
 }
 
