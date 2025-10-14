@@ -1,36 +1,36 @@
 // lib/app/theme.dart
 import 'package:flutter/material.dart';
 
-// Beautiful gradient-inspired brand colors from design
+// Professional corporate brand colors
 class AppColors {
-  // Primary brand colors - Beautiful blue gradient
-  static const Color primaryDark = Color.fromARGB(255, 87, 69, 255);      // Darkest navy (001D39)
-  static const Color primaryMedium = Color.fromARGB(255, 132, 107, 255);     // Medium blue (0A4174)
-  static const Color primaryLight = Color.fromARGB(255, 138, 110, 253);      // Light blue (49769F)
+  // Primary brand colors - Professional navy and slate
+  static const Color primaryDark = Color(0xFF0F172A);       // Slate 900 - Deep professional navy
+  static const Color primaryMedium = Color(0xFF1E293B);     // Slate 800 - Medium navy
+  static const Color primaryLight = Color(0xFF334155);      // Slate 700 - Lighter navy
   
-  // Accent colors - Teal gradient
-  static const Color accent = Color.fromARGB(255, 153, 107, 253);            // Teal accent (4E8EA2)
-  static const Color accentLight = Color.fromARGB(255, 183, 124, 255);       // Light teal (6EA2B3)
-  static const Color accentLightest = Color.fromARGB(255, 167, 147, 247);    // Lightest blue (7BBDE8)
+  // Accent colors - Professional blue with subtle highlights
+  static const Color accent = Color(0xFF3B82F6);            // Blue 500 - Professional blue accent
+  static const Color accentLight = Color(0xFF60A5FA);       // Blue 400 - Light blue
+  static const Color accentLightest = Color(0xFF93C5FD);    // Blue 300 - Lightest blue
   
-  // Status colors
-  static const Color success = Color(0xFF2ECC71);           // Success green
-  static const Color warning = Color(0xFFF39C12);           // Warning orange
-  static const Color error = Color(0xFFE74C3C);             // Error red
+  // Status colors - Professional and accessible
+  static const Color success = Color(0xFF10B981);           // Emerald 500 - Success green
+  static const Color warning = Color(0xFFF59E0B);           // Amber 500 - Warning orange
+  static const Color error = Color(0xFFEF4444);             // Red 500 - Error red
   
-  // Text colors
-  static const Color textPrimary = Color(0xFFFFFFFF);       // Pure white
-  static const Color textSecondary = Color(0xFFBDD8E9);     // Light blue-white (BDD8E9)
-  static const Color textMuted = Color(0xFF7BBDE8);         // Muted blue (7BBDE8)
-  static const Color textDark = Color(0xFF001D39);          // Dark text for light backgrounds
+  // Text colors - High contrast and readable
+  static const Color textPrimary = Color(0xFFF8FAFC);       // Slate 50 - High contrast white
+  static const Color textSecondary = Color(0xFFCBD5E1);     // Slate 300 - Secondary gray
+  static const Color textMuted = Color(0xFF94A3B8);         // Slate 400 - Muted gray
+  static const Color textDark = Color(0xFF1E293B);          // Slate 800 - Dark text for light backgrounds
   
-  // Surface colors - Based on gradient
-  static const Color cardBackground = Color(0xFF0A4174);     // Card background
-  static const Color surfaceElevated = Color(0xFF4E8EA2);   // Elevated surfaces
-  static const Color borderColor = Color(0xFF6EA2B3);       // Subtle borders
-  static const Color dividerColor = Color(0xFF7BBDE8);      // Dividers
+  // Surface colors - Professional grays
+  static const Color cardBackground = Color(0xFF1E293B);     // Slate 800 - Card background
+  static const Color surfaceElevated = Color(0xFF334155);   // Slate 700 - Elevated surfaces
+  static const Color borderColor = Color(0xFF475569);       // Slate 600 - Subtle borders
+  static const Color dividerColor = Color(0xFF64748B);      // Slate 500 - Dividers
   
-  // Beautiful gradient definitions based on design
+  // Professional gradient definitions
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -41,21 +41,21 @@ class AppColors {
   static const LinearGradient backgroundGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [primaryDark, primaryMedium, accent, accentLight, accentLightest, textSecondary],
-    stops: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+    colors: [primaryDark, primaryMedium, cardBackground, surfaceElevated],
+    stops: [0.0, 0.3, 0.7, 1.0],
   );
   
   static const LinearGradient cardGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [cardBackground, accent],
+    colors: [cardBackground, surfaceElevated],
     stops: [0.0, 1.0],
   );
   
   static const LinearGradient buttonGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [accentLightest, textSecondary],
+    colors: [accent, accentLight],
     stops: [0.0, 1.0],
   );
 }
@@ -64,7 +64,7 @@ final ThemeData appTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
   scaffoldBackgroundColor: AppColors.primaryDark,
-  fontFamily: 'Inter', // Professional font family
+  fontFamily: 'Roboto', // Professional corporate font family
   colorScheme: const ColorScheme.dark(
     primary: AppColors.accent,
     primaryContainer: AppColors.accentLight,

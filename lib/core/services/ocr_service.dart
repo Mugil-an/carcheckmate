@@ -293,15 +293,33 @@ class OCRService {
     }
   }
 
-  /// Extract text from PDF (converts first page to image)
+  /// Extract text from PDF - Currently requires manual conversion to image
   Future<OCRResult> extractTextFromPDF(File pdfFile) async {
     try {
-      // PDF OCR would require additional dependencies like pdf_render
-      // For now, return an informative error
+      // Validate file exists and is readable
+      if (!await pdfFile.exists()) {
+        throw OCRException('PDF file not found');
+      }
+
+      // Check file size (limit to 10MB)
+      final fileSize = await pdfFile.length();
+      if (fileSize > 10 * 1024 * 1024) {
+        throw OCRException('PDF file too large. Please use files smaller than 10MB or convert to image first.');
+      }
+
+      // For now, provide clear guidance to users about PDF processing
       throw OCRException(
-          'PDF OCR requires additional setup. Please convert PDF to image first.');
+        'PDF processing requires additional setup. Please:\n\n'
+        '1. Convert your PDF to an image (JPG/PNG) using any PDF viewer\n'
+        '2. Use "Choose from Gallery" to select the converted image\n'
+        '3. Or take a photo of the PDF document using "Capture from Camera"\n\n'
+        'This will ensure the best text recognition accuracy.'
+      );
     } catch (e) {
-      throw OCRException('PDF OCR processing failed: $e');
+      if (e is OCRException) {
+        rethrow;
+      }
+      throw OCRException('PDF file validation failed: ${e.toString()}');
     }
   }
 
@@ -379,9 +397,9 @@ class OCRService {
     final vehiclePlates =
         plateRegex.allMatches(text).map((match) => match.group(0)!).toList();
 
-    // Odometer readings
+    // Odometer readings (handles numbers with commas)
     final odometerRegex =
-        RegExp(r'\b\d{1,6}\s*(?:km|kms|kilometers?)\b', caseSensitive: false);
+        RegExp(r'\b\d{1,3}(?:,\d{3})*\s*(?:km|kms|kilometers?)\b', caseSensitive: false);
     final odometerReadings =
         odometerRegex.allMatches(text).map((match) => match.group(0)!).toList();
 

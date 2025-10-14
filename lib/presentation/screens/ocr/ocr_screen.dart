@@ -3,7 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import '../../widgets/common_background.dart';
-import '../../../core/services/ocr_service.dart';
+import '../../../core/services/ocr_service.dart' hide OCRException;
+import '../../../core/exceptions/ocr_exceptions.dart';
 import '../../../utilities/dialogs/error_dialog.dart';
 
 class OCRScreen extends StatefulWidget {
@@ -42,7 +43,19 @@ class _OCRScreenState extends State<OCRScreen> {
         _isProcessing = false;
       });
       if (mounted) {
-        await showErrorDialog(context, 'Failed to process image. Please try again.');
+        String errorMessage = 'Failed to process image. Please try again.';
+        
+        if (e is OCRException) {
+          errorMessage = e.message;
+        } else if (e is ImageProcessingException) {
+          errorMessage = 'Image processing failed. Please try with a clearer image.';
+        } else if (e is CameraPermissionException) {
+          errorMessage = 'Camera permission denied. Please enable camera access in settings.';
+        } else if (e is FilePickerException) {
+          errorMessage = 'Failed to select image. Please try again.';
+        }
+        
+        await showErrorDialog(context, errorMessage);
       }
     }
   }
@@ -74,7 +87,23 @@ class _OCRScreenState extends State<OCRScreen> {
         _isProcessing = false;
       });
       if (mounted) {
-        await showErrorDialog(context, 'Failed to process PDF. Please try again.');
+        String errorMessage = 'Failed to process PDF. Please try again.';
+        
+        if (e is OCRException) {
+          errorMessage = e.message;
+        } else if (e is PDFProcessingException) {
+          errorMessage = 'PDF processing failed. Please try with a different PDF file.';
+        } else if (e is PDFPasswordProtectedException) {
+          errorMessage = 'PDF is password protected. Please remove password and try again.';
+        } else if (e is PDFCorruptedException) {
+          errorMessage = 'PDF file is corrupted. Please try with a different file.';
+        } else if (e is DocumentSizeException) {
+          errorMessage = 'PDF file too large. Please use files smaller than 50MB.';
+        } else if (e is FilePickerException) {
+          errorMessage = 'Failed to select PDF. Please try again.';
+        }
+        
+        await showErrorDialog(context, errorMessage);
       }
     }
   }
@@ -323,7 +352,7 @@ class _OCRScreenState extends State<OCRScreen> {
         // Upload PDF option
         _buildOptionCard(
           icon: Icons.upload_file,
-          title: 'Upload PDF Document',
+          title: 'Upload PDF Document (Beta)',
           onTap: _pickPDF,
         ),
       ],
@@ -352,19 +381,23 @@ class _OCRScreenState extends State<OCRScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Tip:',
+                  'Tips for Better Results:',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
                 const Text(
-                  'Include odometer readings and dates on every page for best results.',
+                  '• Include odometer readings and dates on every page\n'
+                  '• Ensure documents are clear and well-lit\n'
+                  '• For PDFs: Convert to image first or take a photo\n'
+                  '• Service invoices work better than handwritten notes',
                   style: TextStyle(
                     color: Colors.white70,
-                    fontSize: 14,
+                    fontSize: 13,
+                    height: 1.4,
                   ),
                 ),
               ],
