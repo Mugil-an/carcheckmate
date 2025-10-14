@@ -29,7 +29,9 @@ class LoginScreen extends StatelessWidget {
                 await showErrorDialog(context, 'User not Found');
               } else if (errorMessage.contains('incorrect password') || 
                          errorMessage.contains('wrong password') ||
-                         errorMessage.contains('invalid email or password')) {
+                         errorMessage.contains('invalid email or password') ||
+                         errorMessage.contains('invalid credentials') ||
+                         errorMessage.contains('credential is incorrect')) {
                 await showErrorDialog(context, 'Wrong Password');
               } else {
                 await showErrorDialog(context, 'Authentication Error');
@@ -53,7 +55,7 @@ class LoginScreen extends StatelessWidget {
                     const SizedBox(height: 60),
                     Image.asset(
                       'assets/images/carcheckmate_logo.png',
-                      height: 120,
+                      height: 200,
                       semanticLabel: 'CarCheckMate Logo',
                     ),
                     const SizedBox(height: 40),

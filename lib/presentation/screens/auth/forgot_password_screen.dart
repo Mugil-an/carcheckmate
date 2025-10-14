@@ -49,7 +49,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                 children: [
                   Image.asset(
                     'assets/images/carcheckmate_logo.png',
-                    height: 120,
+                    height: 200,
                     semanticLabel: 'CarCheckMate Logo',
                   ),
                   const SizedBox(height: 40),

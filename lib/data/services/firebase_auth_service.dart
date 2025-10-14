@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import '../../core/exceptions/auth_exceptions.dart';
 
 class FirebaseAuthService {
@@ -17,6 +18,8 @@ class FirebaseAuthService {
       return userCred.user;
     } on FirebaseAuthException catch (e) {
       throw _handleFirebaseAuthException(e);
+    } on PlatformException catch (e) {
+      throw _handlePlatformException(e);
     } catch (e) {
       throw AuthNetworkException(errorCode: 'network-error');
     }
@@ -32,6 +35,8 @@ class FirebaseAuthService {
       return userCred.user;
     } on FirebaseAuthException catch (e) {
       throw _handleFirebaseAuthException(e);
+    } on PlatformException catch (e) {
+      throw _handlePlatformException(e);
     } catch (e) {
       throw AuthNetworkException(errorCode: 'network-error');
     }
@@ -110,6 +115,32 @@ class FirebaseAuthService {
         return InvalidPasswordResetCodeException(errorCode: e.code);
       case 'operation-not-allowed':
         return AuthServiceUnavailableException(errorCode: e.code);
+      default:
+        return GenericAuthException(e.message, e.code);
+    }
+  }
+
+  /// Convert Platform exceptions to custom Auth exceptions
+  AuthException _handlePlatformException(PlatformException e) {
+    switch (e.code) {
+      case 'ERROR_INVALID_CREDENTIAL':
+        return InvalidCredentialsException(errorCode: e.code);
+      case 'ERROR_USER_NOT_FOUND':
+        return UserNotFoundException(errorCode: e.code);
+      case 'ERROR_WRONG_PASSWORD':
+        return IncorrectPasswordException(errorCode: e.code);
+      case 'ERROR_INVALID_EMAIL':
+        return InvalidEmailException(errorCode: e.code);
+      case 'ERROR_USER_DISABLED':
+        return UserDisabledException(errorCode: e.code);
+      case 'ERROR_TOO_MANY_REQUESTS':
+        return TooManyRequestsException(errorCode: e.code);
+      case 'ERROR_EMAIL_ALREADY_IN_USE':
+        return EmailAlreadyInUseException(errorCode: e.code);
+      case 'ERROR_WEAK_PASSWORD':
+        return WeakPasswordException(errorCode: e.code);
+      case 'ERROR_NETWORK_REQUEST_FAILED':
+        return AuthNetworkException(errorCode: e.code);
       default:
         return GenericAuthException(e.message, e.code);
     }

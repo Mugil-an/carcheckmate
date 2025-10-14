@@ -49,7 +49,7 @@ class RegisterScreen extends StatelessWidget {
                   children: [
                     Image.asset(
                       'assets/images/carcheckmate_logo.png',
-                      height: 150,
+                      height: 200,
                       semanticLabel: 'CarCheckMate Logo',
                     ),
                     SizedBox(height: 40),

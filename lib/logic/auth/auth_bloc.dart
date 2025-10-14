@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -36,6 +37,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } on FirebaseAuthException catch (e) {
         final authException = _handleFirebaseAuthException(e);
         emit(AuthError(authException.message));
+      } on PlatformException catch (e) {
+        final authException = _handlePlatformException(e);
+        emit(AuthError(authException.message));
       } catch (e) {
         emit(AuthError(const GenericAuthException().message));
       }
@@ -66,6 +70,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthError(e.message));
       } on FirebaseAuthException catch (e) {
         final authException = _handleFirebaseAuthException(e);
+        emit(AuthError(authException.message));
+      } on PlatformException catch (e) {
+        final authException = _handlePlatformException(e);
         emit(AuthError(authException.message));
       } catch (e) {
         emit(AuthError(const GenericAuthException().message));
@@ -175,6 +182,32 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return AuthNetworkException(errorCode: e.code);
       case 'invalid-action-code':
         return InvalidPasswordResetCodeException(errorCode: e.code);
+      default:
+        return GenericAuthException(e.message, e.code);
+    }
+  }
+
+  /// Convert Platform exceptions to custom Auth exceptions
+  AuthException _handlePlatformException(PlatformException e) {
+    switch (e.code) {
+      case 'ERROR_INVALID_CREDENTIAL':
+        return InvalidCredentialsException(errorCode: e.code);
+      case 'ERROR_USER_NOT_FOUND':
+        return UserNotFoundException(errorCode: e.code);
+      case 'ERROR_WRONG_PASSWORD':
+        return IncorrectPasswordException(errorCode: e.code);
+      case 'ERROR_INVALID_EMAIL':
+        return InvalidEmailException(errorCode: e.code);
+      case 'ERROR_USER_DISABLED':
+        return UserDisabledException(errorCode: e.code);
+      case 'ERROR_TOO_MANY_REQUESTS':
+        return TooManyRequestsException(errorCode: e.code);
+      case 'ERROR_EMAIL_ALREADY_IN_USE':
+        return EmailAlreadyInUseException(errorCode: e.code);
+      case 'ERROR_WEAK_PASSWORD':
+        return WeakPasswordException(errorCode: e.code);
+      case 'ERROR_NETWORK_REQUEST_FAILED':
+        return AuthNetworkException(errorCode: e.code);
       default:
         return GenericAuthException(e.message, e.code);
     }

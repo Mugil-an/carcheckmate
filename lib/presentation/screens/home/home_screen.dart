@@ -42,13 +42,13 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 // Logo
                 Container(
-                  height: 120,
+                  height: 200,
                   child: Image.asset(
                     'assets/images/carcheckmate_logo.png',
                     fit: BoxFit.contain,
                     errorBuilder: (_, __, ___) => const Icon(
                       Icons.directions_car,
-                      size: 120,
+                      size: 200,
                       color: Colors.white,
                     ),
                   ),
