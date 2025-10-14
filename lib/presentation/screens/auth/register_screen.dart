@@ -4,8 +4,8 @@ import '../../../logic/auth/auth_bloc.dart';
 import '../../../logic/auth/auth_event.dart';
 import '../../../logic/auth/auth_state.dart';
 import '../../widgets/common_background.dart';
-import '../../../core/utils/exception_handler.dart';
 import '../../../app/theme.dart';
+import '../../../utilities/dialogs/error_dialog.dart';
 
 class RegisterScreen extends StatelessWidget {
   final TextEditingController emailCtrl = TextEditingController();
@@ -19,13 +19,22 @@ class RegisterScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is AuthError) {
-            ExceptionHandler.handleError(
-              context,
-              state.message,
-              title: 'Registration Error',
-            );
+            // Handle specific error messages like mynotes pattern
+            String errorMessage = state.message.toLowerCase();
+            if (errorMessage.contains('password is too weak') || 
+                errorMessage.contains('weak password')) {
+              await showErrorDialog(context, 'Password is Weak');
+            } else if (errorMessage.contains('email already exists') || 
+                       errorMessage.contains('account with this email already exists')) {
+              await showErrorDialog(context, 'Email is already taken, use another email or login instead');
+            } else if (errorMessage.contains('please enter a valid email') || 
+                       errorMessage.contains('invalid email')) {
+              await showErrorDialog(context, 'Enter valid Email');
+            } else {
+              await showErrorDialog(context, 'Authentication Error');
+            }
           } else if (state is Authenticated) {
             Navigator.pushReplacementNamed(context, "/verify");
           }
@@ -95,41 +104,9 @@ class RegisterScreen extends StatelessWidget {
       height: 56,
       child: ElevatedButton(
         onPressed: () {
-          // Validate inputs
-          if (emailCtrl.text.isEmpty) {
-            ExceptionHandler.handleError(
-              context,
-              'Please enter your email address',
-              title: 'Validation Error',
-            );
-            return;
-          }
-          if (passCtrl.text.isEmpty) {
-            ExceptionHandler.handleError(
-              context,
-              'Please enter your password',
-              title: 'Validation Error',
-            );
-            return;
-          }
-          if (!_isValidEmail(emailCtrl.text)) {
-            ExceptionHandler.handleError(
-              context,
-              'Please enter a valid email address',
-              title: 'Validation Error',
-            );
-            return;
-          }
-          if (passCtrl.text.length < 6) {
-            ExceptionHandler.handleError(
-              context,
-              'Password must be at least 6 characters long',
-              title: 'Validation Error',
-            );
-            return;
-          }
-          
-          context.read<AuthBloc>().add(AuthRegister(emailCtrl.text.trim(), passCtrl.text));
+          final email = emailCtrl.text.trim();
+          final password = passCtrl.text;
+          context.read<AuthBloc>().add(AuthRegister(email, password));
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.accent,
@@ -176,10 +153,5 @@ class RegisterScreen extends StatelessWidget {
       ],
     );
   }
-
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
-  }
-
 
 }

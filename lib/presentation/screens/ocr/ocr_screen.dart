@@ -4,7 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import '../../widgets/common_background.dart';
 import '../../../core/services/ocr_service.dart';
-import '../../../core/utils/exception_handler.dart';
+import '../../../utilities/dialogs/error_dialog.dart';
 
 class OCRScreen extends StatefulWidget {
   const OCRScreen({super.key});
@@ -42,11 +42,7 @@ class _OCRScreenState extends State<OCRScreen> {
         _isProcessing = false;
       });
       if (mounted) {
-        ExceptionHandler.handleError(
-          context,
-          e,
-          title: 'Image Processing Error',
-        );
+        await showErrorDialog(context, 'Failed to process image. Please try again.');
       }
     }
   }
@@ -78,11 +74,7 @@ class _OCRScreenState extends State<OCRScreen> {
         _isProcessing = false;
       });
       if (mounted) {
-        ExceptionHandler.handleError(
-          context,
-          e,
-          title: 'PDF Processing Error',
-        );
+        await showErrorDialog(context, 'Failed to process PDF. Please try again.');
       }
     }
   }

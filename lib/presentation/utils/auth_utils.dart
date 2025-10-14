@@ -3,22 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/auth/auth_bloc.dart';
 import '../../logic/auth/auth_state.dart';
-import '../../core/utils/exception_handler.dart';
+import '../../utilities/dialogs/generic_dialog.dart';
 
 class AuthUtils {
   /// Navigate to a route with authentication check
-  static void navigateWithAuthCheck(
+  static Future<void> navigateWithAuthCheck(
     BuildContext context, 
     String routeName, {
     Object? arguments,
-  }) {
+  }) async {
     final authState = context.read<AuthBloc>().state;
     
     if (authState is Authenticated) {
       Navigator.pushNamed(context, routeName, arguments: arguments);
     } else {
       // Show login dialog or redirect to login
-      _showLoginDialog(context, routeName, arguments);
+      await _showLoginDialog(context, routeName, arguments);
     }
   }
 
@@ -44,25 +44,28 @@ class AuthUtils {
   }
 
   /// Show login dialog when user tries to access protected content
-  static void _showLoginDialog(
+  static Future<void> _showLoginDialog(
     BuildContext context, 
     String intendedRoute, 
     Object? arguments,
-  ) {
-    ExceptionHandler.showWarningDialog(
-      context,
+  ) async {
+    final result = await showGenericDialog<bool>(
+      context: context,
       title: 'Login Required',
-      message: 'You need to login to access this feature. Would you like to login now?',
-      actionText: 'Login',
-      onAction: () {
-        Navigator.of(context, rootNavigator: true).pop();
-        Navigator.pushNamed(context, '/login').then((_) {
-          if (!context.mounted) return;
-          if (isAuthenticated(context)) {
-            Navigator.pushNamed(context, intendedRoute, arguments: arguments);
-          }
-        });
+      content: 'You need to login to access this feature. Would you like to login now?',
+      optionsBuilder: () => {
+        'Cancel': false,
+        'Login': true,
       },
     );
+    
+    if (result == true && context.mounted) {
+      Navigator.pushNamed(context, '/login').then((_) {
+        if (!context.mounted) return;
+        if (isAuthenticated(context)) {
+          Navigator.pushNamed(context, intendedRoute, arguments: arguments);
+        }
+      });
+    }
   }
 }

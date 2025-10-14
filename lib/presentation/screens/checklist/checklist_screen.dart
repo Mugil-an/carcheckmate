@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../logic/checklist/checklist_bloc.dart';
 import '../../widgets/common_background.dart';
 import '../widgets/risk_meter.dart';
-import '../../../core/utils/exception_handler.dart';
 import '../../../app/theme.dart';
+import '../../../utilities/dialogs/error_dialog.dart';
 
 class ChecklistScreen extends StatefulWidget {
   final Map<String, dynamic>? selectedCar;
@@ -31,16 +31,11 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
         backgroundColor: Colors.transparent,
         appBar: const CommonAppBar(title: 'Vehicle Checklist'),
         body: BlocConsumer<ChecklistBloc, ChecklistState>(
-          listener: (context, state) {
+          listener: (context, state) async {
             if (state.status == ChecklistStatus.error) {
-              ExceptionHandler.handleError(
+              await showErrorDialog(
                 context,
                 state.errorMessage ?? 'An error occurred while loading checklist data',
-                title: 'Checklist Error',
-                actionText: 'Retry',
-                onAction: () {
-                  context.read<ChecklistBloc>().add(LoadInitialData());
-                },
               );
             }
           },
@@ -102,12 +97,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                           }
                         } catch (e) {
                           if (mounted) {
-                            ExceptionHandler.handleError(
-                              context,
-                              e,
-                              title: 'Navigation Error',
-                              customMessage: 'Failed to open car selection. Please try again.',
-                            );
+                            await showErrorDialog(context, 'Failed to open car selection. Please try again.');
                           }
                         }
                       },
@@ -227,7 +217,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
           ),
           child: CheckboxListTile(
             value: isSelected,
-            onChanged: (bool? value) {
+            onChanged: (value) async {
               try {
                 context.read<ChecklistBloc>().add(
                   ToggleChecklistItem(
@@ -236,12 +226,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                   ),
                 );
               } catch (e) {
-                ExceptionHandler.handleError(
-                  context,
-                  e,
-                  title: 'Checklist Update Error',
-                  customMessage: 'Failed to update checklist item. Please try again.',
-                );
+                await showErrorDialog(context, 'Failed to update checklist item. Please try again.');
               }
             },
             title: Text(

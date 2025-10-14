@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/common_background.dart';
 import '../../app/theme.dart';
-import '../../core/utils/enhanced_exception_handler.dart';
+import '../../utilities/dialogs/error_dialog.dart';
 import '../../core/exceptions/survey_exceptions.dart';
 import '../../core/exceptions/network_exceptions.dart';
 
@@ -183,13 +183,10 @@ class _SurveyFeedbackScreenState extends State<SurveyFeedbackScreen> {
       setState(() => _isSubmitting = false);
 
       if (mounted) {
-        // Show success message using enhanced exception handler
-        await EnhancedExceptionHandler.showErrorDialog(
+        // Show success message
+        await showErrorDialog(
           context,
-          title: 'Thank You!',
-          message: 'Your feedback has been submitted successfully. We appreciate your time and input.',
-          moduleName: 'Survey',
-          isRecoverable: true,
+          'Your feedback has been submitted successfully. We appreciate your time and input.',
         );
         Navigator.pop(context);
       }
@@ -198,12 +195,9 @@ class _SurveyFeedbackScreenState extends State<SurveyFeedbackScreen> {
       
       if (mounted) {
         if (e is SurveyException) {
-          await EnhancedExceptionHandler.handleException(context, e);
+          await showErrorDialog(context, e.toString());
         } else {
-          await EnhancedExceptionHandler.handleException(
-            context, 
-            GenericSurveyException('Failed to submit survey. Please try again.'),
-          );
+          await showErrorDialog(context, 'Failed to submit survey. Please try again.');
         }
       }
     }

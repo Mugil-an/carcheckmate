@@ -6,8 +6,9 @@ import 'package:carcheckmate/logic/auth/auth_bloc.dart';
 import 'package:carcheckmate/logic/auth/auth_event.dart';
 import 'package:carcheckmate/logic/auth/auth_state.dart';
 import '../../widgets/common_background.dart';
-import '../../../core/utils/exception_handler.dart';
 import '../../../app/theme.dart';
+import '../../../utilities/dialogs/logout_dialog.dart';
+import '../../../utilities/dialogs/error_dialog.dart';
 class HomeScreen extends StatefulWidget {
   static const routeName = '/';
   const HomeScreen({super.key});
@@ -94,12 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       await Navigator.pushNamed(context, '/checklist');
                     } catch (e) {
                       if (mounted) {
-                        ExceptionHandler.handleError(
-                          context,
-                          e,
-                          title: 'Navigation Error',
-                          customMessage: 'Unable to open checklist. Please try again.',
-                        );
+                        await showErrorDialog(context, 'Unable to open checklist. Please try again.');
                       }
                     }
                   },
@@ -114,12 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       await Navigator.pushNamed(context, '/ocr');
                     } catch (e) {
                       if (mounted) {
-                        ExceptionHandler.handleError(
-                          context,
-                          e,
-                          title: 'Navigation Error',
-                          customMessage: 'Unable to open OCR screen. Please try again.',
-                        );
+                        await showErrorDialog(context, 'Unable to open OCR screen. Please try again.');
                       }
                     }
                   },
@@ -260,12 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 await Navigator.pushNamed(context, '/checklist');
               } catch (e) {
                 if (mounted) {
-                  ExceptionHandler.handleError(
-                    context,
-                    e,
-                    title: 'Navigation Error',
-                    customMessage: 'Unable to open checklist. Please try again.',
-                  );
+                  await showErrorDialog(context, 'Unable to open checklist. Please try again.');
                 }
               }
             },
@@ -279,12 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 await Navigator.pushNamed(context, '/ocr');
               } catch (e) {
                 if (mounted) {
-                  ExceptionHandler.handleError(
-                    context,
-                    e,
-                    title: 'Navigation Error',
-                    customMessage: 'Unable to open OCR screen. Please try again.',
-                  );
+                  await showErrorDialog(context, 'Unable to open OCR screen. Please try again.');
                 }
               }
             },
@@ -298,12 +279,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 await Navigator.pushNamed(context, '/rto');
               } catch (e) {
                 if (mounted) {
-                  ExceptionHandler.handleError(
-                    context,
-                    e,
-                    title: 'Navigation Error',
-                    customMessage: 'Unable to open RTO verification. Please try again.',
-                  );
+                  await showErrorDialog(context, 'Unable to open RTO verification. Please try again.');
                 }
               }
             },
@@ -317,12 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 await Navigator.pushNamed(context, '/fraud-awareness');
               } catch (e) {
                 if (mounted) {
-                  ExceptionHandler.handleError(
-                    context,
-                    e,
-                    title: 'Navigation Error',
-                    customMessage: 'Unable to open fraud education. Please try again.',
-                  );
+                  await showErrorDialog(context, 'Unable to open fraud education. Please try again.');
                 }
               }
             },
@@ -336,12 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 await Navigator.pushNamed(context, '/survey');
               } catch (e) {
                 if (mounted) {
-                  ExceptionHandler.handleError(
-                    context,
-                    e,
-                    title: 'Navigation Error',
-                    customMessage: 'Unable to open survey. Please try again.',
-                  );
+                  await showErrorDialog(context, 'Unable to open survey. Please try again.');
                 }
               }
             },
@@ -352,18 +318,10 @@ class _HomeScreenState extends State<HomeScreen> {
             title: 'Sign out',
             onTap: () async {
               Navigator.pop(context);
-              try {
+              final shouldLogout = await showLogOutDialog(context);
+              if (shouldLogout) {
                 context.read<AuthBloc>().add(AuthLogout());
-                await Navigator.pushReplacementNamed(context, '/login');
-              } catch (e) {
-                if (mounted) {
-                  ExceptionHandler.handleError(
-                    context,
-                    e,
-                    title: 'Logout Error',
-                    customMessage: 'Unable to logout properly. Please try again.',
-                  );
-                }
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
               }
             },
           ),

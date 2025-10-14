@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../widgets/common_background.dart';
 import '../../app/theme.dart';
-import '../../core/utils/enhanced_exception_handler.dart';
+import '../../utilities/dialogs/error_dialog.dart';
 import '../../core/exceptions/fraud_awareness_exceptions.dart';
 
 // --- Data Model for Content ---
@@ -106,19 +106,16 @@ class _FraudAwarenessScreenState extends State<FraudAwarenessScreen> {
         });
 
         if (e is FraudAwarenessException) {
-          await EnhancedExceptionHandler.handleException(context, e);
+          await showErrorDialog(context, e.toString());
         } else {
-          await EnhancedExceptionHandler.handleException(
-            context, 
-            GenericFraudAwarenessException('Failed to load fraud awareness content.'),
-          );
+          await showErrorDialog(context, 'Failed to load fraud awareness content.');
         }
       }
     }
   }
 
   // Function to handle card tap: toggle the selected index
-  void _selectContent(int index) {
+  Future<void> _selectContent(int index) async {
     try {
       if (index < 0 || index >= _contents.length) {
         throw FraudContentNavigationException();
@@ -129,7 +126,7 @@ class _FraudAwarenessScreenState extends State<FraudAwarenessScreen> {
       });
     } catch (e) {
       if (e is FraudAwarenessException) {
-        EnhancedExceptionHandler.handleException(context, e);
+        await showErrorDialog(context, e.toString());
       }
     }
   }

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/vehicle_verification/vehicle_verification_bloc.dart';
 import '../../logic/vehicle_verification/vehicle_verification_event.dart';
-import '../../core/utils/exception_handler.dart';
 import '../../app/theme.dart';
+import '../../utilities/dialogs/error_dialog.dart';
 
 class VehicleSearchBar extends StatefulWidget {
   const VehicleSearchBar({super.key});
@@ -28,12 +28,7 @@ class _VehicleSearchBarState extends State<VehicleSearchBar> {
     
     // Validate vehicle number format
     if (!_isValidVehicleNumber(vehicleNumber)) {
-      ExceptionHandler.handleError(
-        context,
-        'Invalid vehicle number format',
-        title: 'Validation Error',
-        customMessage: 'Please enter a valid vehicle number (e.g., DL01AB1234)',
-      );
+      await showErrorDialog(context, 'Please enter a valid vehicle number (e.g., DL01AB1234)');
       return;
     }
     
@@ -45,12 +40,7 @@ class _VehicleSearchBarState extends State<VehicleSearchBar> {
       context.read<VehicleVerificationBloc>().add(GetVehicleDetails(vehicleNumber));
     } catch (e) {
       if (mounted) {
-        ExceptionHandler.handleError(
-          context,
-          e,
-          title: 'Search Error',
-          customMessage: 'Failed to search for vehicle details. Please try again.',
-        );
+        await showErrorDialog(context, 'Failed to search for vehicle details. Please try again.');
         setState(() {
           _isSearching = false;
         });

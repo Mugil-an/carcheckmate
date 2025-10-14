@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../logic/checklist/checklist_bloc.dart';
 import '../../../domain/entities/car.dart';
 import '../../widgets/common_background.dart';
-import '../../../core/utils/exception_handler.dart';
+import '../../../utilities/dialogs/error_dialog.dart';
 import '../../../app/theme.dart';
 
 class CarSelectionScreen extends StatefulWidget {
@@ -32,16 +32,11 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
     super.dispose();
   }
 
-  void _loadCars() {
+  Future<void> _loadCars() async {
     try {
       context.read<ChecklistBloc>().add(LoadInitialData());
     } catch (e) {
-      ExceptionHandler.handleError(
-        context,
-        e,
-        title: 'Data Loading Error',
-        customMessage: 'Failed to load car data. Please try again.',
-      );
+      await showErrorDialog(context, 'Failed to load car data. Please try again.');
     }
   }
 
@@ -60,17 +55,12 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
 
 
 
-  void _onCarSelected(Car car) {
+  Future<void> _onCarSelected(Car car) async {
     try {
       context.read<ChecklistBloc>().add(CarSelected(car));
       Navigator.of(context).pop();
     } catch (e) {
-      ExceptionHandler.handleError(
-        context,
-        e,
-        title: 'Selection Error',
-        customMessage: 'Failed to select ${car.displayName}. Please try again.',
-      );
+      await showErrorDialog(context, 'Failed to select ${car.displayName}. Please try again.');
     }
   }
 
@@ -90,15 +80,30 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
               _allCars = List.from(state.carList);
               _filteredCars = List.from(state.carList);
             } else if (state.status == ChecklistStatus.error) {
-              ExceptionHandler.handleError(
-                context,
-                state.errorMessage ?? 'Unknown error occurred',
-                title: 'Car Selection Error',
-                actionText: 'Retry',
-                onAction: () {
-                  context.read<ChecklistBloc>().add(LoadInitialData());
-                },
-              );
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Car Selection Error'),
+                      content: Text(state.errorMessage ?? 'Unknown error occurred'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            context.read<ChecklistBloc>().add(LoadInitialData());
+                          },
+                          child: const Text('Retry'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    );
+                  },
+                );
             }
           },
           child: Column(

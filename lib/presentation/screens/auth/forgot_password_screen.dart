@@ -6,7 +6,7 @@ import '../../../logic/auth/auth_event.dart';
 import '../../../logic/auth/auth_state.dart';
 import '../../widgets/common_background.dart';
 import '../../../app/theme.dart';
-import '../../../core/utils/exception_handler.dart';
+import '../../../utilities/dialogs/error_dialog.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
   final TextEditingController emailCtrl = TextEditingController();
@@ -29,28 +29,15 @@ class ForgotPasswordScreen extends StatelessWidget {
         body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) async {
           if (state is AuthError) {
-            final message = _resolveErrorMessage(state.message);
-            await ExceptionHandler.handleError(
-              context,
-              state.message,
-              title: 'Password Reset Failed',
-              customMessage: message,
-              actionText: 'Retry',
-              onAction: () {
-                Navigator.of(context, rootNavigator: true).pop();
-              },
-            );
+            await showErrorDialog(context, state.message);
           } else if (state is AuthForgotPasswordSuccess) {
-            await ExceptionHandler.showSuccessDialog(
-              context,
-              title: 'Email Sent',
-              message: 'A password reset link has been sent to your email address. Please check your inbox and follow the instructions.',
-              actionText: 'Back to Login',
-              onAction: () {
-                Navigator.of(context, rootNavigator: true).pop();
-                Navigator.of(context).pop();
-              },
+            // Show success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Password reset email sent'),
+              ),
             );
+            Navigator.pop(context);
           }
         },
         child: SafeArea(
@@ -135,25 +122,8 @@ class ForgotPasswordScreen extends StatelessWidget {
       height: 56,
       child: ElevatedButton(
         onPressed: () {
-          // Validate input
-          if (emailCtrl.text.trim().isEmpty) {
-            ExceptionHandler.handleError(
-              context,
-              'Please enter your email address',
-              title: 'Validation Error',
-            );
-            return;
-          }
-          if (!_isValidEmail(emailCtrl.text.trim())) {
-            ExceptionHandler.handleError(
-              context,
-              'Please enter a valid email address',
-              title: 'Validation Error',
-            );
-            return;
-          }
-          
-          context.read<AuthBloc>().add(AuthForgotPassword(emailCtrl.text.trim()));
+          final email = emailCtrl.text.trim();
+          context.read<AuthBloc>().add(AuthForgotPassword(email));
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.accent,
@@ -189,56 +159,5 @@ class ForgotPasswordScreen extends StatelessWidget {
     );
   }
 
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
-  }
 
-  String _resolveErrorMessage(dynamic error) {
-    if (error is PlatformException) {
-      return _handlePlatformException(error);
-    }
-    return _getUserFriendlyMessage(error.toString());
-  }
-
-  String _handlePlatformException(PlatformException e) {
-    switch (e.code) {
-      case 'ERROR_USER_NOT_FOUND':
-        return 'No account found with this email address. Please check your email or create a new account.';
-      case 'ERROR_INVALID_EMAIL':
-        return 'The email address is not valid. Please enter a valid email address.';
-      case 'ERROR_TOO_MANY_REQUESTS':
-        return 'Too many password reset requests. Please wait a moment before trying again.';
-      case 'ERROR_INVALID_CREDENTIAL':
-        return 'Unable to process password reset request. Please check your email address and try again.';
-      case 'ERROR_NETWORK_REQUEST_FAILED':
-        return 'Network error. Please check your internet connection and try again.';
-      default:
-        return e.message ?? 'Password reset failed. Please try again.';
-    }
-  }
-
-  String _getUserFriendlyMessage(String errorMessage) {
-    final lowercaseMessage = errorMessage.toLowerCase();
-    
-    if (lowercaseMessage.contains('user-not-found') || 
-        lowercaseMessage.contains('user not found')) {
-      return 'No account found with this email address. Please check your email or create a new account.';
-    } else if (lowercaseMessage.contains('invalid-email')) {
-      return 'The email address is not valid. Please enter a valid email address.';
-    } else if (lowercaseMessage.contains('too-many-requests')) {
-      return 'Too many password reset requests. Please wait a moment before trying again.';
-    } else if (lowercaseMessage.contains('invalid-credential') ||
-               lowercaseMessage.contains('error_invalid_credential') ||
-               lowercaseMessage.contains('malformed or has expired')) {
-      return 'Unable to process password reset request. Please check your email address and try again.';
-    } else if (lowercaseMessage.contains('network')) {
-      return 'Network error. Please check your internet connection and try again.';
-    } else if (lowercaseMessage.contains('timeout')) {
-      return 'Request timed out. Please check your internet connection and try again.';
-    } else if (lowercaseMessage.contains('platformexception')) {
-      return 'Password reset failed. Please check your email address and try again.';
-    } else {
-      return errorMessage.isNotEmpty ? errorMessage : 'An unexpected error occurred. Please try again.';
-    }
-  }
 }

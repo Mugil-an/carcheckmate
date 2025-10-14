@@ -5,7 +5,7 @@ import '../../../logic/auth/auth_event.dart';
 import '../../../logic/auth/auth_state.dart';
 import '../../widgets/common_background.dart';
 import '../../../app/theme.dart';
-import '../../../core/utils/exception_handler.dart';
+import '../../../utilities/dialogs/error_dialog.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController emailCtrl = TextEditingController();
@@ -19,59 +19,27 @@ class LoginScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: BlocConsumer<AuthBloc, AuthState>(
-          listener: (context, state) {
+          listener: (context, state) async {
             if (state is AuthError) {
-              String errorTitle = 'Sign-in Error';
-              String? actionText;
-              VoidCallback? onAction;
-              
-              // Provide specific guidance based on error type
+              // Handle specific error messages like mynotes pattern
               String errorMessage = state.message.toLowerCase();
-              if (errorMessage.contains('user-not-found') || errorMessage.contains('user not found')) {
-                errorTitle = 'Account Not Found';
-                actionText = 'Create Account';
-                onAction = () {
-                  Navigator.pushNamed(context, '/register');
-                };
-              } else if (errorMessage.contains('wrong-password') || errorMessage.contains('invalid-credential')) {
-                errorTitle = 'Invalid Credentials';
-                actionText = 'Reset Password';
-                onAction = () {
-                  Navigator.pushNamed(context, '/forgot-password');
-                };
-              } else if (errorMessage.contains('too-many-requests')) {
-                errorTitle = 'Too Many Attempts';
-                actionText = 'Try Later';
-              } else if (errorMessage.contains('network') || errorMessage.contains('connection')) {
-                errorTitle = 'Connection Error';
-                actionText = 'Retry';
-                onAction = () {
-                  // User can try signing in again
-                };
+              if (errorMessage.contains('no account found') || 
+                  errorMessage.contains('user not found') ||
+                  errorMessage == 'user not found') {
+                await showErrorDialog(context, 'User not Found');
+              } else if (errorMessage.contains('incorrect password') || 
+                         errorMessage.contains('wrong password') ||
+                         errorMessage.contains('invalid email or password')) {
+                await showErrorDialog(context, 'Wrong Password');
+              } else {
+                await showErrorDialog(context, 'Authentication Error');
               }
-              
-              ExceptionHandler.handleError(
-                context,
-                state.message,
-                title: errorTitle,
-                actionText: actionText,
-                onAction: onAction,
-              );
             } else if (state is Authenticated) {
-              try {
-                Navigator.pushReplacementNamed(context, "/home");
-              } catch (e) {
-                ExceptionHandler.handleError(
-                  context,
-                  e,
-                  title: 'Navigation Error',
-                  customMessage: 'Signed in successfully, but failed to open the home screen. Please retry.',
-                  actionText: 'Retry',
-                  onAction: () {
-                    Navigator.of(context, rootNavigator: true).pop();
-                    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
-                  },
-                );
+              final user = state.user;
+              if (user.emailVerified) {
+                Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+              } else {
+                Navigator.of(context).pushNamedAndRemoveUntil('/verify-email', (route) => false);
               }
             }
           },
@@ -175,44 +143,14 @@ class LoginScreen extends StatelessWidget {
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: () {
-          // Validate inputs
-          if (emailCtrl.text.isEmpty) {
-            ExceptionHandler.handleError(
-              context,
-              'Please enter your email address',
-              title: 'Validation Error',
-            );
-            return;
-          }
-          if (passCtrl.text.isEmpty) {
-            ExceptionHandler.handleError(
-              context,
-              'Please enter your password',
-              title: 'Validation Error',
-            );
-            return;
-          }
-          if (!_isValidEmail(emailCtrl.text)) {
-            ExceptionHandler.handleError(
-              context,
-              'Please enter a valid email address',
-              title: 'Validation Error',
-            );
-            return;
-          }
-          
+        onPressed: () async {
+          final email = emailCtrl.text.trim();
+          final password = passCtrl.text;
           try {
-            // Show loading state
-            debugPrint('Attempting to sign in with email: ${emailCtrl.text.trim()}');
-            context.read<AuthBloc>().add(AuthLogin(emailCtrl.text.trim(), passCtrl.text));
+            // Use the existing BLoC but handle exceptions at UI level
+            context.read<AuthBloc>().add(AuthLogin(email, password));
           } catch (e) {
-            ExceptionHandler.handleError(
-              context,
-              e,
-              title: 'Sign-in Error',
-              customMessage: 'Failed to initiate sign-in process. Please check your connection and try again.',
-            );
+            // This won't catch BLoC exceptions, but we'll handle them in the listener
           }
         },
         style: ElevatedButton.styleFrom(
@@ -232,12 +170,6 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
-
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
-  }
-
-
 
   Widget _buildRegisterButton(BuildContext context) {
     return Row(
