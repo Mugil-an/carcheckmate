@@ -74,8 +74,8 @@ class VehicleDetailsCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: vehicleDetails.lienStatus!.isActive 
-                            ? Colors.orange.withOpacity(0.2)
-                            : Colors.green.withOpacity(0.2),
+                            ? Colors.orange.withValues(alpha: 0.2)
+                            : Colors.green.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -125,7 +125,7 @@ class VehicleDetailsCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.2),
+                  color: Colors.green.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
@@ -242,7 +242,7 @@ class VehicleDetailsCard extends StatelessWidget {
                 ? Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.2),
+                      color: statusColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(

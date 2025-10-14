@@ -216,12 +216,12 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
         return Container(
           margin: const EdgeInsets.only(bottom: 12.0),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected 
                   ? AppColors.primaryDark
-                  : Colors.white.withOpacity(0.1),
+                  : Colors.white.withValues(alpha: 0.1),
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -303,58 +303,8 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
     ),
         ),
         // Risk Score Button
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16.0),
-          child: ElevatedButton.icon(
-            onPressed: () {
-              try {
-                _showRiskScoreDialog(state);
-              } catch (e) {
-                ExceptionHandler.handleError(
-                  context,
-                  e,
-                  title: 'Risk Score Error',
-                  customMessage: 'Failed to display risk score. Please try again.',
-                );
-              }
-            },
-            icon: const Icon(Icons.analytics_outlined),
-            label: Text(
-              'View Risk Score (${state.riskScore.toStringAsFixed(1)})',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accent,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 4,
-            ),
-          ),
-        ),
       ],
     );
   }
 
-  void _showRiskScoreDialog(ChecklistState state) {
-    final selectedIssues = state.itemSelections.entries
-        .where((entry) => entry.value == true)
-        .map((entry) => entry.key)
-        .toList();
-    
-    ExceptionHandler.showSuccessDialog(
-      context,
-      title: 'Vehicle Risk Assessment',
-      message: selectedIssues.isEmpty 
-          ? 'Great! No issues detected.\nRisk Score: ${state.riskScore.toStringAsFixed(1)}/100'
-          : 'Issues detected: ${selectedIssues.length}\nRisk Score: ${state.riskScore.toStringAsFixed(1)}/100\n\nSelected Issues:\n• ${selectedIssues.join('\n• ')}',
-      actionText: 'OK',
-      onAction: () {
-        Navigator.of(context).pop();
-      },
-    );
-  }
 }

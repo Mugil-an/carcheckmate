@@ -21,7 +21,7 @@ class ExceptionHandler {
           backgroundColor: AppColors.cardBackground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: AppColors.error.withOpacity(0.3), width: 1),
+            side: BorderSide(color: AppColors.error.withValues(alpha: 0.3), width: 1),
           ),
           title: Row(
             children: [
@@ -68,7 +68,7 @@ class ExceptionHandler {
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.textPrimary,
-                backgroundColor: AppColors.accent.withOpacity(0.1),
+                backgroundColor: AppColors.accent.withValues(alpha: 0.1),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -98,7 +98,7 @@ class ExceptionHandler {
           backgroundColor: AppColors.cardBackground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: AppColors.success.withOpacity(0.3), width: 1),
+            side: BorderSide(color: AppColors.success.withValues(alpha: 0.3), width: 1),
           ),
           title: Row(
             children: [
@@ -145,7 +145,7 @@ class ExceptionHandler {
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.textPrimary,
-                backgroundColor: AppColors.success.withOpacity(0.1),
+                backgroundColor: AppColors.success.withValues(alpha: 0.1),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -175,7 +175,7 @@ class ExceptionHandler {
           backgroundColor: AppColors.cardBackground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: AppColors.warning.withOpacity(0.3), width: 1),
+            side: BorderSide(color: AppColors.warning.withValues(alpha: 0.3), width: 1),
           ),
           title: Row(
             children: [
@@ -222,7 +222,7 @@ class ExceptionHandler {
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.textPrimary,
-                backgroundColor: AppColors.warning.withOpacity(0.1),
+                backgroundColor: AppColors.warning.withValues(alpha: 0.1),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),

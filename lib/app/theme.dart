@@ -114,7 +114,7 @@ final ThemeData appTheme = ThemeData(
       ),
       minimumSize: const Size(120, 56),
     ).copyWith(
-      overlayColor: MaterialStateProperty.all(AppColors.accentLight.withOpacity(0.1)),
+      overlayColor: WidgetStateProperty.all(AppColors.accentLight.withValues(alpha: 0.1)),
     ),
   ),
   outlinedButtonTheme: OutlinedButtonThemeData(
@@ -131,7 +131,7 @@ final ThemeData appTheme = ThemeData(
       ),
       minimumSize: const Size(120, 56),
     ).copyWith(
-      overlayColor: MaterialStateProperty.all(AppColors.accent.withOpacity(0.1)),
+      overlayColor: WidgetStateProperty.all(AppColors.accent.withValues(alpha: 0.1)),
     ),
   ),
   textButtonTheme: TextButtonThemeData(
@@ -142,7 +142,7 @@ final ThemeData appTheme = ThemeData(
   ),
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
-    fillColor: AppColors.cardBackground.withOpacity(0.6),
+    fillColor: AppColors.cardBackground.withValues(alpha: 0.6),
     contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(16),
@@ -180,7 +180,7 @@ final ThemeData appTheme = ThemeData(
     shadowColor: Colors.black26,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(20),
-      side: BorderSide(color: AppColors.borderColor.withOpacity(0.3), width: 1),
+      side: BorderSide(color: AppColors.borderColor.withValues(alpha: 0.3), width: 1),
     ),
     margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
   ),

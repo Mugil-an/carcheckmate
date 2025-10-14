@@ -68,9 +68,9 @@ class RegisterScreen extends StatelessWidget {
   Widget _buildTextField(TextEditingController controller, String label, bool obscureText) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: TextField(
         controller: controller,

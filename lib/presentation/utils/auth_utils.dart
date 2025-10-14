@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/auth/auth_bloc.dart';
 import '../../logic/auth/auth_state.dart';
+import '../../core/utils/exception_handler.dart';
 
 class AuthUtils {
   /// Navigate to a route with authentication check
@@ -48,50 +49,20 @@ class AuthUtils {
     String intendedRoute, 
     Object? arguments,
   ) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF0A4174),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Text(
-          'Login Required',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: const Text(
-          'You need to login to access this feature. Would you like to login now?',
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white54),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/login').then((_) {
-                // After login, check if user is authenticated and navigate to intended route
-                if (isAuthenticated(context)) {
-                  Navigator.pushNamed(context, intendedRoute, arguments: arguments);
-                }
-              });
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF7BBDE8),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Login'),
-          ),
-        ],
-      ),
+    ExceptionHandler.showWarningDialog(
+      context,
+      title: 'Login Required',
+      message: 'You need to login to access this feature. Would you like to login now?',
+      actionText: 'Login',
+      onAction: () {
+        Navigator.of(context, rootNavigator: true).pop();
+        Navigator.pushNamed(context, '/login').then((_) {
+          if (!context.mounted) return;
+          if (isAuthenticated(context)) {
+            Navigator.pushNamed(context, intendedRoute, arguments: arguments);
+          }
+        });
+      },
     );
   }
 }

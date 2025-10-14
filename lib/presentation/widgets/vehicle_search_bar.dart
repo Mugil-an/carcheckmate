@@ -81,9 +81,9 @@ class _VehicleSearchBarState extends State<VehicleSearchBar> {
         // Search Input Container
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: Row(
             children: [
@@ -147,7 +147,7 @@ class _VehicleSearchBarState extends State<VehicleSearchBar> {
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white.withOpacity(0.95),
+              backgroundColor: Colors.white.withValues(alpha: 0.95),
               foregroundColor: AppColors.primaryDark,
               elevation: 4,
               shadowColor: Colors.black26,

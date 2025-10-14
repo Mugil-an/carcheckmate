@@ -63,15 +63,7 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
   void _onCarSelected(Car car) {
     try {
       context.read<ChecklistBloc>().add(CarSelected(car));
-      ExceptionHandler.handleSuccess(
-        context,
-        title: 'Vehicle Selected',
-        message: 'Successfully selected ${car.displayName}',
-        actionText: 'Continue',
-        onAction: () {
-          Navigator.of(context).pop();
-        },
-      );
+      Navigator.of(context).pop();
     } catch (e) {
       ExceptionHandler.handleError(
         context,
@@ -115,9 +107,9 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
               Container(
                 margin: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
-                  color: AppColors.cardBackground.withOpacity(0.6),
+                  color: AppColors.cardBackground.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.borderColor.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.borderColor.withValues(alpha: 0.3)),
                 ),
                 child: TextField(
                   controller: _searchController,
@@ -247,9 +239,9 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
         return Container(
           margin: const EdgeInsets.only(bottom: 12.0),
           decoration: BoxDecoration(
-            color: AppColors.cardBackground.withOpacity(0.6),
+            color: AppColors.cardBackground.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.borderColor.withOpacity(0.3)),
+            border: Border.all(color: AppColors.borderColor.withValues(alpha: 0.3)),
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(
@@ -260,7 +252,7 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.accent.withOpacity(0.1),
+                color: AppColors.accent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(

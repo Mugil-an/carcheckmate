@@ -34,7 +34,7 @@ class EnhancedExceptionHandler {
           backgroundColor: AppColors.cardBackground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: moduleColor.withOpacity(0.3), width: 1),
+            side: BorderSide(color: moduleColor.withValues(alpha: 0.3), width: 1),
           ),
           title: Row(
             children: [
@@ -66,7 +66,7 @@ class EnhancedExceptionHandler {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: moduleColor.withOpacity(0.1),
+                      color: moduleColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -93,7 +93,7 @@ class EnhancedExceptionHandler {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.warning.withOpacity(0.1),
+                      color: AppColors.warning.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -134,7 +134,7 @@ class EnhancedExceptionHandler {
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.textPrimary,
-                backgroundColor: moduleColor.withOpacity(0.1),
+                backgroundColor: moduleColor.withValues(alpha: 0.1),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),

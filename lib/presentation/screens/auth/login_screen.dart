@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../logic/auth/auth_bloc.dart';
 import '../../../logic/auth/auth_event.dart';
@@ -62,25 +61,17 @@ class LoginScreen extends StatelessWidget {
               try {
                 Navigator.pushReplacementNamed(context, "/home");
               } catch (e) {
-                // Use simple error dialog to prevent any crashes
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  showDialog(
-                    context: context,
-                    builder: (dialogContext) => AlertDialog(
-                      title: const Text('Navigation Error'),
-                      content: const Text('Successfully signed in, but failed to navigate to home screen. Please tap OK to continue.'),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(dialogContext).pop();
-                            Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
-                          },
-                          child: const Text('OK'),
-                        ),
-                      ],
-                    ),
-                  );
-                });
+                ExceptionHandler.handleError(
+                  context,
+                  e,
+                  title: 'Navigation Error',
+                  customMessage: 'Signed in successfully, but failed to open the home screen. Please retry.',
+                  actionText: 'Retry',
+                  onAction: () {
+                    Navigator.of(context, rootNavigator: true).pop();
+                    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+                  },
+                );
               }
             }
           },
@@ -143,9 +134,9 @@ class LoginScreen extends StatelessWidget {
   Widget _buildTextField(TextEditingController controller, String label, bool obscureText) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: TextField(
         controller: controller,

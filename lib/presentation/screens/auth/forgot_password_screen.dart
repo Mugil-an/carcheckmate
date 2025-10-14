@@ -6,6 +6,7 @@ import '../../../logic/auth/auth_event.dart';
 import '../../../logic/auth/auth_state.dart';
 import '../../widgets/common_background.dart';
 import '../../../app/theme.dart';
+import '../../../core/utils/exception_handler.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
   final TextEditingController emailCtrl = TextEditingController();
@@ -26,11 +27,30 @@ class ForgotPasswordScreen extends StatelessWidget {
           ),
         ),
         body: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is AuthError) {
-            _showErrorDialog(context, state.message);
+            final message = _resolveErrorMessage(state.message);
+            await ExceptionHandler.handleError(
+              context,
+              state.message,
+              title: 'Password Reset Failed',
+              customMessage: message,
+              actionText: 'Retry',
+              onAction: () {
+                Navigator.of(context, rootNavigator: true).pop();
+              },
+            );
           } else if (state is AuthForgotPasswordSuccess) {
-            _showSuccessDialog(context);
+            await ExceptionHandler.showSuccessDialog(
+              context,
+              title: 'Email Sent',
+              message: 'A password reset link has been sent to your email address. Please check your inbox and follow the instructions.',
+              actionText: 'Back to Login',
+              onAction: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                Navigator.of(context).pop();
+              },
+            );
           }
         },
         child: SafeArea(
@@ -89,9 +109,9 @@ class ForgotPasswordScreen extends StatelessWidget {
   Widget _buildTextField(TextEditingController controller, String label) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: TextField(
         controller: controller,
@@ -117,11 +137,19 @@ class ForgotPasswordScreen extends StatelessWidget {
         onPressed: () {
           // Validate input
           if (emailCtrl.text.trim().isEmpty) {
-            _showErrorDialog(context, 'Please enter your email address');
+            ExceptionHandler.handleError(
+              context,
+              'Please enter your email address',
+              title: 'Validation Error',
+            );
             return;
           }
           if (!_isValidEmail(emailCtrl.text.trim())) {
-            _showErrorDialog(context, 'Please enter a valid email address');
+            ExceptionHandler.handleError(
+              context,
+              'Please enter a valid email address',
+              title: 'Validation Error',
+            );
             return;
           }
           
@@ -165,115 +193,11 @@ class ForgotPasswordScreen extends StatelessWidget {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
-  void _showErrorDialog(BuildContext context, dynamic error) {
-    String message;
+  String _resolveErrorMessage(dynamic error) {
     if (error is PlatformException) {
-      message = _handlePlatformException(error);
-    } else {
-      message = error.toString();
+      return _handlePlatformException(error);
     }
-    
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.cardBackground,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: AppColors.borderColor.withOpacity(0.3)),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.error_outline,
-                color: AppColors.error,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Error',
-                style: TextStyle(
-                  color: AppColors.error,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            _getUserFriendlyMessage(message),
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 16,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'OK',
-                style: TextStyle(
-                  color: AppColors.accent,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showSuccessDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.cardBackground,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: AppColors.borderColor.withOpacity(0.3)),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.check_circle_outline,
-                color: AppColors.success,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Email Sent',
-                style: TextStyle(
-                  color: AppColors.success,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            'A password reset link has been sent to your email address. Please check your inbox and follow the instructions.',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 16,
-            ),
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop(); // Go back to login
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.success,
-              ),
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
+    return _getUserFriendlyMessage(error.toString());
   }
 
   String _handlePlatformException(PlatformException e) {

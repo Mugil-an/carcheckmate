@@ -124,7 +124,7 @@ class _RiskMeterPainter extends CustomPainter {
 
     // Draw faint background ring (glass feel)
     final bgPaint = Paint()
-      ..color = Colors.white.withOpacity(0.06)
+      ..color = Colors.white.withValues(alpha: 0.06)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
@@ -142,7 +142,7 @@ class _RiskMeterPainter extends CustomPainter {
       final segStop = (seg['stop']! as double).clamp(0.0, 1.0);
       final sweep = fullSweep * (segStop - last);
       final segPaint = Paint()
-        ..color = (seg['color']! as Color).withOpacity(0.12)
+        ..color = (seg['color']! as Color).withValues(alpha: 0.12)
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.butt;
@@ -158,7 +158,7 @@ class _RiskMeterPainter extends CustomPainter {
       final shader = SweepGradient(
         startAngle: startAngle,
         endAngle: startAngle + sweep,
-        colors: [color.withOpacity(0.9), color.withOpacity(0.6)],
+        colors: [color.withValues(alpha: 0.9), color.withValues(alpha: 0.6)],
       ).createShader(Rect.fromCircle(center: center, radius: radius));
 
       final fgPaint = Paint()
@@ -171,7 +171,7 @@ class _RiskMeterPainter extends CustomPainter {
 
       // glow
       final glowPaint = Paint()
-        ..color = color.withOpacity(0.12)
+        ..color = color.withValues(alpha: 0.12)
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth * 1.6
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
@@ -180,13 +180,13 @@ class _RiskMeterPainter extends CustomPainter {
       // knob
       final endAngle = startAngle + sweep;
       final knob = Offset(cos(endAngle), sin(endAngle)) * radius + center;
-      canvas.drawCircle(knob.translate(0, 1.6), strokeWidth * 0.45 + 1.6, Paint()..color = Colors.black.withOpacity(0.12));
+      canvas.drawCircle(knob.translate(0, 1.6), strokeWidth * 0.45 + 1.6, Paint()..color = Colors.black.withValues(alpha: 0.12));
       canvas.drawCircle(knob, strokeWidth * 0.45, Paint()..color = color);
     }
 
     // small center inner ring for depth
     final innerPaint = Paint()
-      ..color = Colors.white.withOpacity(0.03)
+      ..color = Colors.white.withValues(alpha: 0.03)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
     canvas.drawCircle(center, radius * 0.6, innerPaint);

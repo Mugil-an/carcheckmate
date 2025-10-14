@@ -151,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: isPrimary ? Colors.white.withOpacity(0.95) : Colors.transparent,
+          backgroundColor: isPrimary ? Colors.white.withValues(alpha: 0.95) : Colors.transparent,
           foregroundColor: isPrimary ? AppColors.primaryDark : Colors.white,
           elevation: isPrimary ? 4 : 0,
           shadowColor: isPrimary ? Colors.black26 : null,
@@ -194,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           width: 50,
                           height: 50,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -221,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text(
                                   email,
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withValues(alpha: 0.8),
                                     fontSize: 14,
                                   ),
                                   overflow: TextOverflow.ellipsis,
@@ -235,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.2),
+                        color: Colors.green.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(

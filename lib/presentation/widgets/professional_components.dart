@@ -33,17 +33,17 @@ class ProfessionalCard extends StatelessWidget {
         color: backgroundColor,
         borderRadius: borderRadius ?? BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.borderColor.withOpacity(0.3),
+          color: AppColors.borderColor.withValues(alpha: 0.3),
           width: 1,
         ),
         boxShadow: elevated ? [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -101,7 +101,7 @@ class ProfessionalButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AppColors.accent.withOpacity(0.3),
+              color: AppColors.accent.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -239,7 +239,7 @@ class InfoCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: (iconColor ?? AppColors.accent).withOpacity(0.1),
+              color: (iconColor ?? AppColors.accent).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
