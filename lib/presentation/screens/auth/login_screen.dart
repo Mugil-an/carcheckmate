@@ -26,32 +26,50 @@ class LoginScreen extends StatelessWidget {
               if (errorMessage.contains('no account found') || 
                   errorMessage.contains('user not found') ||
                   errorMessage == 'user not found') {
-                await showErrorDialog(context, 'User not Found');
+                if (context.mounted) {
+                  await showErrorDialog(context, 'User not Found');
+                }
               } else if (errorMessage.contains('incorrect password') || 
                          errorMessage.contains('wrong password') ||
                          errorMessage.contains('invalid email or password') ||
                          errorMessage.contains('invalid credentials') ||
                          errorMessage.contains('credential is incorrect')) {
-                await showErrorDialog(context, 'Wrong Password');
+                if (context.mounted) {
+                  await showErrorDialog(context, 'Wrong Password');
+                }
               } else {
-                await showErrorDialog(context, 'Authentication Error');
+                if (context.mounted) {
+                  await showErrorDialog(context, 'Authentication Error');
+                }
               }
             } else if (state is Authenticated) {
-              final user = state.user;
-              if (user.emailVerified) {
-                Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
-              } else {
-                Navigator.of(context).pushNamedAndRemoveUntil('/verify-email', (route) => false);
-              }
+              // Use post-frame callback to avoid navigation conflicts
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (context.mounted) {
+                  final user = state.user;
+                  if (user.emailVerified) {
+                    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+                  } else {
+                    Navigator.of(context).pushNamedAndRemoveUntil('/verify-email', (route) => false);
+                  }
+                }
+              });
             }
           },
           builder: (context, state) {
             return SafeArea(
               child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
                 padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height - 
+                      MediaQuery.of(context).padding.top - 
+                      MediaQuery.of(context).padding.bottom - 48,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                     const SizedBox(height: 60),
                     Image.asset(
                       'assets/images/carcheckmate_logo.png',
@@ -91,7 +109,8 @@ class LoginScreen extends StatelessWidget {
                       _buildLoginButton(context),
                     const SizedBox(height: 20),
                     _buildRegisterButton(context),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );

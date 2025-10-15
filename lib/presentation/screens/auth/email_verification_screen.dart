@@ -13,9 +13,16 @@ class EmailVerificationScreen extends StatelessWidget {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is Authenticated) {
-            Navigator.pushReplacementNamed(context, "/home");
+            // Use post-frame callback to avoid navigation conflicts
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) {
+                Navigator.pushReplacementNamed(context, "/home");
+              }
+            });
           } else if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
+            }
           }
         },
         child: Container(
@@ -105,8 +112,13 @@ class EmailVerificationScreen extends StatelessWidget {
   Widget _buildBackButton(BuildContext context) {
     return TextButton(
       onPressed: () {
-        context.read<AuthBloc>().add(AuthLogout());
-        Navigator.pushReplacementNamed(context, "/login");
+        try {
+          // Let AuthGuard handle navigation after logout
+          context.read<AuthBloc>().add(AuthLogout());
+        } catch (e) {
+          // Fallback navigation if bloc is not available
+          Navigator.pushReplacementNamed(context, "/login");
+        }
       },
       child: Text(
         "Back to Login",

@@ -211,10 +211,11 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
             Text(
               _searchController.text.isNotEmpty 
                   ? 'Try adjusting your search terms'
-                  : 'Please check back later',
+                  : 'Database appears to be empty. Use Data Migration to populate vehicle data.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textMuted,
               ),
+              textAlign: TextAlign.center,
             ),
             if (_searchController.text.isNotEmpty) ...[
               const SizedBox(height: 24),
@@ -226,6 +227,18 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
                 label: const Text('Clear Search'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
+                ),
+              ),
+            ] else if (_allCars.isEmpty) ...[
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/admin/migration');
+                },
+                icon: const Icon(Icons.upload),
+                label: const Text('Go to Data Migration'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
                 ),
               ),
             ],

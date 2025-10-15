@@ -46,6 +46,39 @@ class CarModel extends Equatable {
     );
   }
 
+  /// Factory constructor for creating CarModel from Firestore document
+  factory CarModel.fromFirestore(Map<String, dynamic> data, String documentId) {
+    final brand = data['brand'] as String? ?? '';
+    final model = data['model'] as String? ?? '';
+    final year = data['year'] as int? ?? 0;
+
+    return CarModel(
+      id: documentId,
+      displayName: data['displayName'] as String? ?? '$brand $model ($year)',
+      brand: brand,
+      model: model,
+      year: year,
+      issues: List<String>.from(data['issues'] as List? ?? []),
+      severities: List<String>.from(data['severities'] as List? ?? []),
+      estimatedCostsINR: List<int>.from(data['estimatedCostsINR'] as List? ?? []),
+    );
+  }
+
+  /// Convert CarModel to Firestore document format
+  Map<String, dynamic> toFirestore() {
+    return {
+      'brand': brand,
+      'model': model,
+      'year': year,
+      'displayName': displayName,
+      'issues': issues,
+      'severities': severities,
+      'estimatedCostsINR': estimatedCostsINR,
+      'createdAt': DateTime.now().toIso8601String(),
+      'updatedAt': DateTime.now().toIso8601String(),
+    };
+  }
+
   @override
   List<Object> get props => [id, displayName, brand, model, year, issues, severities, estimatedCostsINR];
 }

@@ -1,23 +1,21 @@
 // lib/data/repositories/checklist_repository_impl.dart
 import 'package:carcheckmate/domain/repositories/checklist_repository.dart';
 import 'package:carcheckmate/domain/entities/car.dart';
-import 'package:carcheckmate/data/datasources/local_checklist_datasource.dart';
+import 'package:carcheckmate/data/datasources/firebase_checklist_datasource.dart';
 import 'package:carcheckmate/data/models/checklist_item.dart' as dmodel;
 import 'package:carcheckmate/data/models/car_model.dart';
 import '../../core/exceptions/checklist_exceptions.dart';
 
 class ChecklistRepositoryImpl implements ChecklistRepository {
-  final LocalChecklistDataSource _local;
+  final FirebaseChecklistDataSource _firebaseDataSource;
 
-  ChecklistRepositoryImpl(this._local);
+  ChecklistRepositoryImpl(this._firebaseDataSource);
 
   @override
   Future<List<Car>> getCarList() async {
     try {
-      final carModels = await _local.loadCarModels();
-      if (carModels.isEmpty) {
-        throw const CarListLoadFailedException();
-      }
+      final carModels = await _firebaseDataSource.loadCarModels();
+      // Empty list is acceptable - Firebase might be empty before migration
       return carModels.map((m) => _toDomainCar(m)).toList();
     } catch (e) {
       if (e is ChecklistException) rethrow;
@@ -33,18 +31,21 @@ class ChecklistRepositoryImpl implements ChecklistRepository {
         throw const InvalidCarSelectionException();
       }
 
-      final carModels = await _local.loadCarModels();
-      if (carModels.isEmpty) {
-        throw const CarListLoadFailedException();
+      // Convert year to int if it's not already
+      int yearInt;
+      if (year is String) {
+        yearInt = int.tryParse(year) ?? 0;
+      } else if (year is int) {
+        yearInt = year;
+      } else {
+        throw const InvalidCarSelectionException();
       }
 
-      final carModel = carModels.firstWhere(
-        (car) =>
-            car.brand == brand &&
-            car.model == model &&
-            car.year.toString() == year.toString(),
-        orElse: () => throw const CarDataNotFoundException(),
-      );
+      final carModel = await _firebaseDataSource.getCarByModelDetails(brand, model, yearInt);
+      
+      if (carModel == null) {
+        throw const CarDataNotFoundException();
+      }
       
       return _toDomainCar(carModel);
     } on ChecklistException {

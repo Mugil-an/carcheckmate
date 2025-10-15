@@ -139,7 +139,7 @@ class _SurveyFeedbackScreenState extends State<SurveyFeedbackScreen> {
   Future<void> _submitSurvey() async {
     try {
       // Validate form
-      if (!_formKey.currentState!.validate()) {
+      if (_formKey.currentState?.validate() != true) {
         throw SurveyValidationException();
       }
       

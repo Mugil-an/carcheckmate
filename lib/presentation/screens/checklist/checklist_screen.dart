@@ -81,6 +81,58 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
             
             return Column(
               children: [
+                // Show message when no cars are available
+                if (state.carList.isEmpty) ...[
+                  Container(
+                    margin: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(24.0),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.info_outline,
+                          size: 48,
+                          color: Colors.orange,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'No Car Data Available',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'The checklist database is empty. You need to migrate data from local files to Firebase.',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            Navigator.pushNamed(context, '/admin/migration');
+                          },
+                          icon: const Icon(Icons.upload),
+                          label: const Text('Go to Data Migration'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                
                 // Car Selection Dropdown
                 if (state.carList.isNotEmpty) ...[
                   Container(
@@ -97,7 +149,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                           }
                         } catch (e) {
                           if (mounted) {
-                            await showErrorDialog(context, 'Failed to open car selection. Please try again.');
+                            showErrorDialog(context, 'Failed to open car selection. Please try again.');
                           }
                         }
                       },

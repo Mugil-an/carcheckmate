@@ -73,14 +73,17 @@ class _OCRScreenState extends State<OCRScreen> {
           _analysis = null;
         });
 
-        final file = File(result.files.single.path!);
-        final ocrResult = await _ocrService.extractTextFromPDF(file);
-        final analysis = _ocrService.parseServiceHistory(ocrResult.extractedText);
-        
-        setState(() {
-          _analysis = analysis;
-          _isProcessing = false;
-        });
+        final filePath = result.files.single.path;
+        if (filePath != null) {
+          final file = File(filePath);
+          final ocrResult = await _ocrService.extractTextFromPDF(file);
+          final analysis = _ocrService.parseServiceHistory(ocrResult.extractedText);
+          
+          setState(() {
+            _analysis = analysis;
+            _isProcessing = false;
+          });
+        }
       }
     } catch (e) {
       setState(() {

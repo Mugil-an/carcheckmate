@@ -1,4 +1,5 @@
 // lib/presentation/widgets/auth_guard.dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/auth/auth_bloc.dart';
@@ -31,9 +32,14 @@ class _AuthGuardState extends State<AuthGuard> {
   }
 
   void _checkAuthStatus() {
-    if (!_hasCheckedAuth) {
-      context.read<AuthBloc>().add(AuthCheckCurrent());
-      _hasCheckedAuth = true;
+    if (!_hasCheckedAuth && mounted) {
+      try {
+        context.read<AuthBloc>().add(AuthCheckCurrent());
+        _hasCheckedAuth = true;
+      } catch (e) {
+        // Handle case where bloc might not be available
+        debugPrint('Error checking auth status: $e');
+      }
     }
   }
 
@@ -45,24 +51,46 @@ class _AuthGuardState extends State<AuthGuard> {
         if (state is AuthError) {
           // Show error dialog for authentication errors
           WidgetsBinding.instance.addPostFrameCallback((_) async {
-            await showErrorDialog(context, state.message);
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              '/login',
-              (route) => false,
-            );
+            try {
+              if (mounted && context.mounted) {
+                await showErrorDialog(context, state.message);
+                if (mounted && context.mounted) {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/login',
+                    (route) => false,
+                  );
+                }
+              }
+            } catch (e) {
+              debugPrint('Error showing auth error dialog: $e');
+              // Fallback navigation without dialog
+              if (mounted && context.mounted) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/login',
+                  (route) => false,
+                );
+              }
+            }
           });
         } else if (state is Unauthenticated) {
           // User is not authenticated, redirect to login
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (Navigator.canPop(context)) {
-              Navigator.pushReplacementNamed(context, '/login');
-            } else {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/login',
-                (route) => false,
-              );
+            try {
+              if (mounted && context.mounted) {
+                if (Navigator.canPop(context)) {
+                  Navigator.pushReplacementNamed(context, '/login');
+                } else {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/login',
+                    (route) => false,
+                  );
+                }
+              }
+            } catch (e) {
+              debugPrint('Error during navigation: $e');
             }
           });
         }

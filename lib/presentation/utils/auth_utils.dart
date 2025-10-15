@@ -12,13 +12,18 @@ class AuthUtils {
     String routeName, {
     Object? arguments,
   }) async {
-    final authState = context.read<AuthBloc>().state;
-    
-    if (authState is Authenticated) {
-      Navigator.pushNamed(context, routeName, arguments: arguments);
-    } else {
-      // Show login dialog or redirect to login
-      await _showLoginDialog(context, routeName, arguments);
+    try {
+      final authState = context.read<AuthBloc>().state;
+      
+      if (authState is Authenticated) {
+        Navigator.pushNamed(context, routeName, arguments: arguments);
+      } else {
+        // Show login dialog or redirect to login
+        await _showLoginDialog(context, routeName, arguments);
+      }
+    } catch (e) {
+      // Fallback if bloc is not available
+      Navigator.pushNamed(context, '/login');
     }
   }
 
@@ -28,19 +33,29 @@ class AuthUtils {
     String routeName, {
     Object? arguments,
   }) {
-    final authState = context.read<AuthBloc>().state;
-    
-    if (authState is Authenticated) {
-      Navigator.pushReplacementNamed(context, routeName, arguments: arguments);
-    } else {
+    try {
+      final authState = context.read<AuthBloc>().state;
+      
+      if (authState is Authenticated) {
+        Navigator.pushReplacementNamed(context, routeName, arguments: arguments);
+      } else {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    } catch (e) {
+      // Fallback if bloc is not available
       Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
   /// Check if user is authenticated
   static bool isAuthenticated(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
-    return authState is Authenticated;
+    try {
+      final authState = context.read<AuthBloc>().state;
+      return authState is Authenticated;
+    } catch (e) {
+      // Return false if bloc is not available
+      return false;
+    }
   }
 
   /// Show login dialog when user tries to access protected content

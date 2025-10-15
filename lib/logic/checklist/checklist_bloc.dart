@@ -30,9 +30,7 @@ class ChecklistBloc extends Bloc<ChecklistEvent, ChecklistState> {
     try {
       if (event.car == null) {
         final cars = await _repository.getCarList();
-        if (cars.isEmpty) {
-          throw const CarListLoadFailedException();
-        }
+        // Empty car list is acceptable - user can use migration screen to populate data
         emit(state.copyWith(status: ChecklistStatus.loaded, carList: cars));
       } else {
         final carData = event.car!;

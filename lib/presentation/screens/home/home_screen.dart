@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Logo
-                Container(
+                SizedBox(
                   height: 200,
                   child: Image.asset(
                     'assets/images/carcheckmate_logo.png',
@@ -95,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       await Navigator.pushNamed(context, '/checklist');
                     } catch (e) {
                       if (mounted) {
-                        await showErrorDialog(context, 'Unable to open checklist. Please try again.');
+                        showErrorDialog(context, 'Unable to open checklist. Please try again.');
                       }
                     }
                   },
@@ -110,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       await Navigator.pushNamed(context, '/ocr');
                     } catch (e) {
                       if (mounted) {
-                        await showErrorDialog(context, 'Unable to open OCR screen. Please try again.');
+                        showErrorDialog(context, 'Unable to open OCR screen. Please try again.');
                       }
                     }
                   },
@@ -251,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 await Navigator.pushNamed(context, '/checklist');
               } catch (e) {
                 if (mounted) {
-                  await showErrorDialog(context, 'Unable to open checklist. Please try again.');
+                  showErrorDialog(context, 'Unable to open checklist. Please try again.');
                 }
               }
             },
@@ -265,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 await Navigator.pushNamed(context, '/ocr');
               } catch (e) {
                 if (mounted) {
-                  await showErrorDialog(context, 'Unable to open OCR screen. Please try again.');
+                  showErrorDialog(context, 'Unable to open OCR screen. Please try again.');
                 }
               }
             },
@@ -279,7 +279,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 await Navigator.pushNamed(context, '/rto');
               } catch (e) {
                 if (mounted) {
-                  await showErrorDialog(context, 'Unable to open RTO verification. Please try again.');
+                  showErrorDialog(context, 'Unable to open RTO verification. Please try again.');
                 }
               }
             },
@@ -293,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 await Navigator.pushNamed(context, '/fraud-awareness');
               } catch (e) {
                 if (mounted) {
-                  await showErrorDialog(context, 'Unable to open fraud education. Please try again.');
+                  showErrorDialog(context, 'Unable to open fraud education. Please try again.');
                 }
               }
             },
@@ -307,7 +307,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 await Navigator.pushNamed(context, '/survey');
               } catch (e) {
                 if (mounted) {
-                  await showErrorDialog(context, 'Unable to open survey. Please try again.');
+                  showErrorDialog(context, 'Unable to open survey. Please try again.');
+                }
+              }
+            },
+          ),
+          const Divider(color: Colors.white24),
+          _buildDrawerItem(
+            icon: Icons.admin_panel_settings,
+            title: 'Admin',
+            onTap: () async {
+              Navigator.pop(context);
+              try {
+                await Navigator.pushNamed(context, '/admin/migration');
+              } catch (e) {
+                if (mounted) {
+                  showErrorDialog(context, 'Unable to open Admin screen. Please try again.');
                 }
               }
             },
@@ -319,9 +334,16 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () async {
               Navigator.pop(context);
               final shouldLogout = await showLogOutDialog(context);
-              if (shouldLogout) {
-                context.read<AuthBloc>().add(AuthLogout());
-                Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
+              if (shouldLogout && mounted) {
+                try {
+                  // Let AuthGuard handle navigation after logout
+                  context.read<AuthBloc>().add(AuthLogout());
+                } catch (e) {
+                  // Fallback navigation if bloc is not available
+                  if (mounted) {
+                    Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
+                  }
+                }
               }
             },
           ),

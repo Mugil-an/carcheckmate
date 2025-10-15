@@ -23,11 +23,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
         final user = await _repository.signIn(event.email, event.password);
         if (user != null) {
-          if (user.emailVerified) {
-            emit(Authenticated(user));
-          } else {
+          try {
+            // Safely check email verification status
+            final isVerified = user.emailVerified;
+            if (isVerified) {
+              emit(Authenticated(user));
+            } else {
+              emit(Unauthenticated());
+              add(AuthSendVerification());
+            }
+          } catch (e) {
+            // Handle case where user properties might be null after auth state changes
             emit(Unauthenticated());
-            add(AuthSendVerification());
           }
         } else {
           throw const GenericAuthException("Login failed");
@@ -146,8 +153,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthCheckCurrent>((event, emit) async {
       try {
         final user = _repository.currentUser;
-        if (user != null && user.emailVerified) {
-          emit(Authenticated(user));
+        if (user != null) {
+          // Safely check email verification
+          try {
+            if (user.emailVerified) {
+              emit(Authenticated(user));
+            } else {
+              emit(Unauthenticated());
+            }
+          } catch (e) {
+            // Handle case where user properties might be null
+            emit(Unauthenticated());
+          }
         } else {
           emit(Unauthenticated());
         }

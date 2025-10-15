@@ -25,25 +25,44 @@ class RegisterScreen extends StatelessWidget {
             String errorMessage = state.message.toLowerCase();
             if (errorMessage.contains('password is too weak') || 
                 errorMessage.contains('weak password')) {
-              await showErrorDialog(context, 'Password is Weak');
+              if (context.mounted) {
+                await showErrorDialog(context, 'Password is Weak');
+              }
             } else if (errorMessage.contains('email already exists') || 
                        errorMessage.contains('account with this email already exists')) {
-              await showErrorDialog(context, 'Email is already taken, use another email or login instead');
+              if (context.mounted) {
+                await showErrorDialog(context, 'Email is already taken, use another email or login instead');
+              }
             } else if (errorMessage.contains('please enter a valid email') || 
                        errorMessage.contains('invalid email')) {
-              await showErrorDialog(context, 'Enter valid Email');
+              if (context.mounted) {
+                await showErrorDialog(context, 'Enter valid Email');
+              }
             } else {
-              await showErrorDialog(context, 'Authentication Error');
+              if (context.mounted) {
+                await showErrorDialog(context, 'Authentication Error');
+              }
             }
           } else if (state is Authenticated) {
-            Navigator.pushReplacementNamed(context, "/verify");
+            // Use post-frame callback to avoid navigation conflicts
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) {
+                Navigator.pushReplacementNamed(context, "/verify");
+              }
+            });
           }
         },
         builder: (context, state) {
           return SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              padding: const EdgeInsets.all(24.0),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height - 
+                    MediaQuery.of(context).padding.top - 
+                    MediaQuery.of(context).padding.bottom - 48,
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

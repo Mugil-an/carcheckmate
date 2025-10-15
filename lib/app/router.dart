@@ -11,6 +11,7 @@ import '../presentation/screens/ocr/ocr_screen.dart';
 import '../presentation/screens/rto_lien_verification_screen.dart';
 import '../presentation/screens/fraud_awareness_screen.dart';
 import '../presentation/screens/survey_feedback_screen.dart';
+import '../presentation/screens/admin/data_migration_screen.dart';
 import '../presentation/widgets/auth_guard.dart';
 
 class AppRouter {
@@ -44,6 +45,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const AuthGuard(child: FraudAwarenessScreen()));
       case '/survey':
         return MaterialPageRoute(builder: (_) => const AuthGuard(child: SurveyFeedbackScreen()));
+      case '/admin/migration':
+        return MaterialPageRoute(builder: (_) => const AuthGuard(child: DataMigrationScreen()));
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
