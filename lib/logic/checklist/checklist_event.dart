@@ -7,22 +7,17 @@ abstract class ChecklistEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadInitialData extends ChecklistEvent {
-  final Map<String, dynamic>? car;
-
-  const LoadInitialData({this.car});
-
-  @override
-  List<Object?> get props => [car];
+class LoadCarList extends ChecklistEvent {
+  const LoadCarList();
 }
 
 class CarSelected extends ChecklistEvent {
-  final Car selectedCar;
+  final CarSummary carSummary;
 
-  const CarSelected(this.selectedCar);
+  const CarSelected(this.carSummary);
 
   @override
-  List<Object?> get props => [selectedCar];
+  List<Object?> get props => [carSummary];
 }
 
 class ToggleChecklistItem extends ChecklistEvent {

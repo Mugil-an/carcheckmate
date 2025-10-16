@@ -1,6 +1,7 @@
 // lib/data/repositories/checklist_repository_impl.dart
 import 'package:carcheckmate/domain/repositories/checklist_repository.dart';
 import 'package:carcheckmate/domain/entities/car.dart';
+import 'package:carcheckmate/domain/entities/car_summary.dart';
 import 'package:carcheckmate/data/datasources/firebase_checklist_datasource.dart';
 import 'package:carcheckmate/data/models/checklist_item.dart' as dmodel;
 import 'package:carcheckmate/data/models/car_model.dart';
@@ -12,14 +13,35 @@ class ChecklistRepositoryImpl implements ChecklistRepository {
   ChecklistRepositoryImpl(this._firebaseDataSource);
 
   @override
-  Future<List<Car>> getCarList() async {
+  Future<List<CarSummary>> getCarSummaries() async {
     try {
       final carModels = await _firebaseDataSource.loadCarModels();
       // Empty list is acceptable - Firebase might be empty before migration
-      return carModels.map((m) => _toDomainCar(m)).toList();
+      return carModels.map((m) => _toSummary(m)).toList();
     } catch (e) {
       if (e is ChecklistException) rethrow;
       throw const ChecklistLoadFailedException();
+    }
+  }
+
+  @override
+  Future<Car?> getCarById(String carId) async {
+    try {
+      if (carId.isEmpty) {
+        throw const InvalidCarSelectionException();
+      }
+
+      final carModel = await _firebaseDataSource.getCarById(carId);
+
+      if (carModel == null) {
+        throw const CarDataNotFoundException();
+      }
+
+      return _toDomainCar(carModel);
+    } on ChecklistException {
+      rethrow;
+    } catch (_) {
+      throw const CarDataNotFoundException();
     }
   }
 
@@ -53,6 +75,16 @@ class ChecklistRepositoryImpl implements ChecklistRepository {
     } catch (e) {
       throw const CarDataNotFoundException();
     }
+  }
+
+  CarSummary _toSummary(CarModel m) {
+    return CarSummary(
+      id: _idFor(m),
+      displayName: m.displayName,
+      brand: m.brand,
+      model: m.model,
+      year: m.year,
+    );
   }
 
   Car _toDomainCar(CarModel m) {

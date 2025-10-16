@@ -6,6 +6,7 @@ import '../../core/exceptions/checklist_exceptions.dart';
 abstract class FirebaseChecklistDataSource {
   Future<List<CarModel>> loadCarModels();
   Future<CarModel?> getCarByModelDetails(String brand, String model, int year);
+  Future<CarModel?> getCarById(String carId);
   Future<void> saveCarModel(CarModel carModel);
 }
 
@@ -41,6 +42,37 @@ class FirebaseChecklistDataSourceImpl implements FirebaseChecklistDataSource {
     } catch (e) {
       if (e is ChecklistException) rethrow;
       throw const ChecklistLoadFailedException();
+    }
+  }
+
+  @override
+  Future<CarModel?> getCarById(String carId) async {
+    try {
+      final docSnapshot = await _firestore
+          .collection(_collection)
+          .doc(carId)
+          .get();
+
+      if (!docSnapshot.exists) {
+        return null;
+      }
+
+      final data = docSnapshot.data();
+      if (data == null) {
+        return null;
+      }
+
+      return CarModel.fromFirestore(data, docSnapshot.id);
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw const ChecklistPermissionException();
+      } else if (e.code == 'unavailable') {
+        throw const ChecklistNetworkException();
+      }
+      throw CarDataNotFoundException(errorCode: e.code);
+    } catch (e) {
+      if (e is ChecklistException) rethrow;
+      throw const CarDataNotFoundException();
     }
   }
 

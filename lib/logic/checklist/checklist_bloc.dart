@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:carcheckmate/domain/entities/car.dart';
+import 'package:carcheckmate/domain/entities/car_summary.dart';
 import 'package:carcheckmate/domain/repositories/checklist_repository.dart';
 import 'package:carcheckmate/data/models/checklist_item.dart';
 import 'package:carcheckmate/core/services/risk_calculator_service.dart';
@@ -19,81 +20,70 @@ class ChecklistBloc extends Bloc<ChecklistEvent, ChecklistState> {
   })  : _repository = repository,
         _riskService = riskService,
         super(const ChecklistState()) {
-    on<LoadInitialData>(_onLoadInitialData);
+    on<LoadCarList>(_onLoadCarList);
     on<CarSelected>(_onCarSelected);
     on<ToggleChecklistItem>(_onToggleChecklistItem);
   }
 
-  Future<void> _onLoadInitialData(
-      LoadInitialData event, Emitter<ChecklistState> emit) async {
-    emit(state.copyWith(status: ChecklistStatus.loading));
+  Future<void> _onLoadCarList(
+      LoadCarList event, Emitter<ChecklistState> emit) async {
+    emit(state.copyWith(
+      status: ChecklistStatus.loading,
+      resetSelectedCar: true,
+      resetChecklistItems: true,
+      resetItemSelections: true,
+      riskScore: 100.0,
+      resetErrorMessage: true,
+    ));
     try {
-      if (event.car == null) {
-        final cars = await _repository.getCarList();
-        // Empty car list is acceptable - user can use migration screen to populate data
-        emit(state.copyWith(status: ChecklistStatus.loaded, carList: cars));
-      } else {
-        final carData = event.car!;
-        
-        // Validate car data
-        if (!carData.containsKey('brand') || !carData.containsKey('model') || !carData.containsKey('year')) {
-          throw const InvalidCarSelectionException();
-        }
-
-        final car = await _repository.getCarByModelDetails(
-          carData['brand'],
-          carData['model'],
-          carData['year'],
-        );
-        if (car != null) {
-          final items = car.checklistItems;
-          if (items.isEmpty) {
-            throw const ChecklistDataNotFoundException();
-          }
-          
-          final Map<String, bool> selections = {
-            for (var item in items) item.issue: false // Start with all items unchecked (no problems)
-          };
-          final riskScore = _riskService.calculateScore(
-            items: items,
-            selections: selections,
-          );
-          emit(state.copyWith(
-            status: ChecklistStatus.loaded,
-            selectedCar: car,
-            checklistItems: items,
-            itemSelections: selections,
-            riskScore: riskScore,
-          ));
-        } else {
-          throw const CarDataNotFoundException();
-        }
-      }
+      final cars = await _repository.getCarSummaries();
+      emit(state.copyWith(
+        status: ChecklistStatus.loaded,
+        carList: cars,
+        resetSelectedCar: true,
+        resetChecklistItems: true,
+        resetItemSelections: true,
+        riskScore: 100.0,
+      ));
     } on ChecklistException catch (e) {
       emit(state.copyWith(
         status: ChecklistStatus.error,
         errorMessage: e.message,
+        resetSelectedCar: true,
+        resetChecklistItems: true,
+        resetItemSelections: true,
       ));
-    } catch (e) {
+    } catch (_) {
       emit(state.copyWith(
         status: ChecklistStatus.error,
         errorMessage: const GenericChecklistException().message,
+        resetSelectedCar: true,
+        resetChecklistItems: true,
+        resetItemSelections: true,
       ));
     }
   }
 
-  void _onCarSelected(CarSelected event, Emitter<ChecklistState> emit) {
+  Future<void> _onCarSelected(
+      CarSelected event, Emitter<ChecklistState> emit) async {
     emit(state.copyWith(
       status: ChecklistStatus.loading,
-      selectedCar: event.selectedCar,
-      checklistItems: [],
-      itemSelections: {},
-      riskScore: 0.0,
+      resetSelectedCar: true,
+      resetChecklistItems: true,
+      resetItemSelections: true,
+      riskScore: 100.0,
+      resetErrorMessage: true,
     ));
 
     try {
-      final items = event.selectedCar.checklistItems;
-      
+      final car = await _repository.getCarById(event.carSummary.id);
+
+      if (car == null) {
+        throw const CarDataNotFoundException();
+      }
+
+      final items = car.checklistItems;
+
       if (items.isEmpty) {
         throw const ChecklistDataNotFoundException();
       }
@@ -109,6 +99,7 @@ class ChecklistBloc extends Bloc<ChecklistEvent, ChecklistState> {
 
       emit(state.copyWith(
         status: ChecklistStatus.loaded,
+        selectedCar: car,
         checklistItems: items,
         itemSelections: selections,
         riskScore: riskScore,
@@ -118,7 +109,7 @@ class ChecklistBloc extends Bloc<ChecklistEvent, ChecklistState> {
         status: ChecklistStatus.error,
         errorMessage: e.message,
       ));
-    } catch (e) {
+    } catch (_) {
       emit(state.copyWith(
         status: ChecklistStatus.error,
         errorMessage: const CarSelectionException().message,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../logic/checklist/checklist_bloc.dart';
-import '../../../domain/entities/car.dart';
+import '../../../domain/entities/car_summary.dart';
 import '../../widgets/common_background.dart';
 import '../../../utilities/dialogs/error_dialog.dart';
 import '../../../app/theme.dart';
@@ -15,8 +15,8 @@ class CarSelectionScreen extends StatefulWidget {
 
 class _CarSelectionScreenState extends State<CarSelectionScreen> {
   final TextEditingController _searchController = TextEditingController();
-  List<Car> _filteredCars = [];
-  List<Car> _allCars = [];
+  List<CarSummary> _filteredCars = [];
+  List<CarSummary> _allCars = [];
   bool _isLoading = true;
 
   @override
@@ -34,8 +34,8 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
 
   Future<void> _loadCars() async {
     try {
-      context.read<ChecklistBloc>().add(LoadInitialData());
-    } catch (e) {
+      context.read<ChecklistBloc>().add(const LoadCarList());
+    } catch (_) {
       await showErrorDialog(context, 'Failed to load car data. Please try again.');
     }
   }
@@ -44,7 +44,7 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       if (query.isEmpty) {
-        _filteredCars = List.from(_allCars);
+        _filteredCars = List<CarSummary>.from(_allCars);
       } else {
         _filteredCars = _allCars.where((car) {
           return car.displayName.toLowerCase().contains(query);
@@ -54,12 +54,11 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
   }
 
 
-
-  Future<void> _onCarSelected(Car car) async {
+  Future<void> _onCarSelected(CarSummary car) async {
     try {
       context.read<ChecklistBloc>().add(CarSelected(car));
       Navigator.of(context).pop();
-    } catch (e) {
+    } catch (_) {
       await showErrorDialog(context, 'Failed to select ${car.displayName}. Please try again.');
     }
   }
@@ -77,8 +76,8 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
             });
 
             if (state.status == ChecklistStatus.loaded) {
-              _allCars = List.from(state.carList);
-              _filteredCars = List.from(state.carList);
+              _allCars = List<CarSummary>.from(state.carList);
+              _filteredCars = List<CarSummary>.from(state.carList);
             } else if (state.status == ChecklistStatus.error) {
                 showDialog(
                   context: context,
@@ -90,7 +89,7 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
                         TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
-                            context.read<ChecklistBloc>().add(LoadInitialData());
+                            context.read<ChecklistBloc>().add(const LoadCarList());
                           },
                           child: const Text('Retry'),
                         ),
@@ -287,7 +286,7 @@ class _CarSelectionScreenState extends State<CarSelectionScreen> {
               ),
             ),
             subtitle: Text(
-              'ID: ${car.id}',
+              '${car.brand} ${car.model} (${car.year})',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppColors.textMuted,
               ),

@@ -21,7 +21,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
   void initState() {
     super.initState();
     // Always load all cars first
-    context.read<ChecklistBloc>().add(LoadInitialData());
+    context.read<ChecklistBloc>().add(const LoadCarList());
   }
 
   @override
@@ -70,7 +70,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
-                        context.read<ChecklistBloc>().add(LoadInitialData());
+                        context.read<ChecklistBloc>().add(const LoadCarList());
                       },
                       child: const Text('Retry'),
                     ),
@@ -147,7 +147,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                             // User might have canceled selection
                             debugPrint('Car selection was canceled or no car was selected');
                           }
-                        } catch (e) {
+                        } catch (_) {
                           if (mounted) {
                             showErrorDialog(context, 'Failed to open car selection. Please try again.');
                           }
@@ -277,7 +277,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                     selected: value ?? false,
                   ),
                 );
-              } catch (e) {
+                  } catch (_) {
                 await showErrorDialog(context, 'Failed to update checklist item. Please try again.');
               }
             },

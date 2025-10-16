@@ -4,7 +4,7 @@ enum ChecklistStatus { initial, loading, loaded, error }
 
 class ChecklistState extends Equatable {
   final ChecklistStatus status;
-  final List<Car> carList;
+  final List<CarSummary> carList;
   final Car? selectedCar;
   final List<ChecklistItem> checklistItems;
   final Map<String, bool> itemSelections;
@@ -23,21 +23,25 @@ class ChecklistState extends Equatable {
 
   ChecklistState copyWith({
     ChecklistStatus? status,
-    List<Car>? carList,
+    List<CarSummary>? carList,
     Car? selectedCar,
+    bool resetSelectedCar = false,
     List<ChecklistItem>? checklistItems,
+    bool resetChecklistItems = false,
     Map<String, bool>? itemSelections,
+    bool resetItemSelections = false,
     double? riskScore,
     String? errorMessage,
+    bool resetErrorMessage = false,
   }) {
     return ChecklistState(
       status: status ?? this.status,
       carList: carList ?? this.carList,
-      selectedCar: selectedCar ?? this.selectedCar,
-      checklistItems: checklistItems ?? this.checklistItems,
-      itemSelections: itemSelections ?? this.itemSelections,
+      selectedCar: resetSelectedCar ? null : (selectedCar ?? this.selectedCar),
+      checklistItems: resetChecklistItems ? const [] : (checklistItems ?? this.checklistItems),
+      itemSelections: resetItemSelections ? const {} : (itemSelections ?? this.itemSelections),
       riskScore: riskScore ?? this.riskScore,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: resetErrorMessage ? null : (errorMessage ?? this.errorMessage),
     );
   }
 

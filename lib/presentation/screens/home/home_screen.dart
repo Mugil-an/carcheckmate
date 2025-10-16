@@ -1,7 +1,6 @@
 // lib/presentation/screens/home/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:carcheckmate/logic/checklist/checklist_bloc.dart';
 import 'package:carcheckmate/logic/auth/auth_bloc.dart';
 import 'package:carcheckmate/logic/auth/auth_event.dart';
 import 'package:carcheckmate/logic/auth/auth_state.dart';
@@ -21,8 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Load cars for potential use in checklist
-    context.read<ChecklistBloc>().add(LoadInitialData());
+    // Cars will be loaded when user navigates to checklist screen
+    // No need to load data on home screen initialization
   }
 
   @override
