@@ -17,10 +17,9 @@ class ApiKeys {
   // }
   
   static Map<String, String> get rapidApiHeaders => {
-    'x-rapidapi-key': rapidApiKey,
-    'x-rapidapi-host': rapidApiHost,
-    'x-rapidapi-ua': 'RapidAPI-Playground',
-    'Content-Type': 'application/json',
+    'X-RapidAPI-Key': rapidApiKey,
+    'X-RapidAPI-Host': rapidApiHost,
+    'User-Agent': 'CarCheckMate/1.0',
   };
   
   // Debug method to check API key configuration

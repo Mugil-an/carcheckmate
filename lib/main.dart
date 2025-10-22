@@ -49,6 +49,17 @@ Future<void> main() async {
     try {
       // Load environment variables
       await dotenv.load(fileName: ".env");
+      debugPrint('✅ .env file loaded successfully');
+      debugPrint('📋 RAPIDAPI_KEY length: ${dotenv.env['RAPIDAPI_KEY']?.length ?? 0}');
+      debugPrint('📋 RAPIDAPI_HOST: ${dotenv.env['RAPIDAPI_HOST'] ?? 'NOT SET'}');
+      
+      // Verify critical env vars are loaded
+      if (dotenv.env['RAPIDAPI_KEY'] == null || dotenv.env['RAPIDAPI_KEY']!.isEmpty) {
+        debugPrint('⚠️  WARNING: RAPIDAPI_KEY not found in .env file');
+      }
+      if (dotenv.env['RAPIDAPI_HOST'] == null || dotenv.env['RAPIDAPI_HOST']!.isEmpty) {
+        debugPrint('⚠️  WARNING: RAPIDAPI_HOST not found in .env file');
+      }
       
       await Firebase.initializeApp();
       await di.configureDependencies();

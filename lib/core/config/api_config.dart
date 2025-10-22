@@ -12,11 +12,11 @@ class ApiConfig {
     'Accept': 'application/json',
   };
   
-  // Timeout configurations
-  static const Duration connectionTimeout = Duration(seconds: 30);
-  static const Duration receiveTimeout = Duration(seconds: 30);
+  // Timeout configurations (reduced for better UX)
+  static const Duration connectionTimeout = Duration(seconds: 15);
+  static const Duration receiveTimeout = Duration(seconds: 15);
   
   // Rate limiting - Conservative settings for RapidAPI
-  static const int maxRetries = 1;
-  static const Duration retryDelay = Duration(seconds: 5);
+  static const int maxRetries = 2;
+  static const Duration retryDelay = Duration(seconds: 3);
 }

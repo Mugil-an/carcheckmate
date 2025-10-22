@@ -42,7 +42,13 @@ class HttpClient {
   }) async {
     debugPrint('HttpClient: POST request to $endpoint');
     debugPrint('HttpClient: Query parameters: $queryParameters');
-    debugPrint('HttpClient: Request body: ${body != null ? 'Present (${body.keys.length} keys)' : 'None'}');
+    
+    if (body != null) {
+      debugPrint('HttpClient: Request body keys: ${body.keys.toList()}');
+      debugPrint('HttpClient: Request body: ${jsonEncode(body)}');
+    } else {
+      debugPrint('HttpClient: Request body: None');
+    }
     
     try {
       return await _makeRequest(
@@ -59,11 +65,27 @@ class HttpClient {
   }
 
   Uri _buildUri(String endpoint, Map<String, String>? queryParameters) {
-    final uri = Uri.parse('${ApiConfig.rapidApiBaseUrl}$endpoint');
-    if (queryParameters != null) {
-      return uri.replace(queryParameters: queryParameters);
+    final fullUrl = '${ApiConfig.rapidApiBaseUrl}$endpoint';
+    debugPrint('HttpClient: Building URI from: $fullUrl');
+    
+    try {
+      final uri = Uri.parse(fullUrl);
+      debugPrint('HttpClient: Parsed URI successfully');
+      debugPrint('HttpClient: Scheme: ${uri.scheme}');
+      debugPrint('HttpClient: Host: ${uri.host}');
+      debugPrint('HttpClient: Port: ${uri.port}');
+      debugPrint('HttpClient: Path: ${uri.path}');
+      
+      if (queryParameters != null) {
+        debugPrint('HttpClient: Adding query parameters: $queryParameters');
+        return uri.replace(queryParameters: queryParameters);
+      }
+      return uri;
+    } catch (e) {
+      debugPrint('HttpClient: ERROR parsing URI: $e');
+      debugPrint('HttpClient: Attempted URL: $fullUrl');
+      rethrow;
     }
-    return uri;
   }
 
   Map<String, String> _buildHeaders(Map<String, String>? additionalHeaders) {
@@ -77,8 +99,16 @@ class HttpClient {
     }
     
     debugPrint('HttpClient: Built headers with ${headers.length} total entries');
-    // Don't log actual header values for security (especially API keys)
     debugPrint('HttpClient: Header keys: ${headers.keys.toList()}');
+    
+    // Log headers safely (hide sensitive values)
+    headers.forEach((key, value) {
+      if (key.toLowerCase().contains('key') || key.toLowerCase().contains('auth')) {
+        debugPrint('HttpClient: $key: ${value.length > 10 ? '${value.substring(0, 10)}...(${value.length} chars)' : '***'}');
+      } else {
+        debugPrint('HttpClient: $key: $value');
+      }
+    });
     
     return headers;
   }
@@ -96,10 +126,26 @@ class HttpClient {
       throw const ConnectionTimeoutException();
     } on SocketException catch (e) {
       debugPrint('HttpClient: Socket error - $e');
+      debugPrint('HttpClient: Socket OS Error: ${e.osError}');
+      debugPrint('HttpClient: Socket address: ${e.address}');
+      debugPrint('HttpClient: Socket port: ${e.port}');
+      
+      // Provide more specific error messages
       if (e.message.contains('Failed host lookup') || 
-          e.message.contains('Network is unreachable')) {
+          e.osError?.message.contains('nodename nor servname provided') == true ||
+          e.osError?.message.contains('No address associated with hostname') == true) {
+        debugPrint('❌ DNS resolution failed - Cannot resolve hostname');
+        debugPrint('💡 Possible causes:');
+        debugPrint('   1. No internet connection on device/emulator');
+        debugPrint('   2. DNS server not reachable');
+        debugPrint('   3. Hostname is incorrect');
+        debugPrint('   4. Firewall/Proxy blocking DNS requests');
+        throw const NoInternetConnectionException();
+      } else if (e.message.contains('Network is unreachable')) {
+        debugPrint('❌ Network unreachable - No internet connection');
         throw const NoInternetConnectionException();
       } else {
+        debugPrint('❌ Connection refused or other socket error');
         throw const ConnectionRefusedException();
       }
     } on http.ClientException catch (e) {
