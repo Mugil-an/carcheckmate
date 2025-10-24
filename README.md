@@ -1,6 +1,6 @@
 # CarCheckMate 🚗
 
-> **Your Complete Used Car Inspection & Verification Companion**
+> **Complete Used Car Inspection & Verification Companion**
 
 CarCheckMate is a comprehensive Flutter mobile application designed to empower used car buyers in India with professional-grade inspection tools, automated vehicle verification, and data-driven risk assessment. Make informed decisions and avoid costly mistakes when purchasing a used vehicle.
 
