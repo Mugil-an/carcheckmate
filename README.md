@@ -45,8 +45,8 @@ This ensures that a severe, expensive problem (like a gearbox failure) has a muc
 # Score Chart Description 📊
 The Overall Score is the final output of the checklist, designed to give the user an immediate and easy-to-understand assessment of the vehicle's mechanical risk. The score is displayed prominently in a color-coded card.
 
-### Score: 80 - 100 (Low Risk) 🟢
-**Meaning**: This vehicle appears to be in excellent mechanical condition. The user found few to no issues from the list of common problems.
+### Score: 80 - 100 (High Risk) 🔴
+**Meaning**: This vehicle shows signs of major mechanical problems or significant neglect. The user identified several high-severity/high-cost issues.
 
 **Interpretation**: The car has likely been well-maintained. Any potential repairs are expected to be minor and inexpensive. This is a "Green Light" vehicle that you can proceed to purchase with high confidence, pending the results of the service history and RTO checks.
 
@@ -55,7 +55,7 @@ The Overall Score is the final output of the checklist, designed to give the use
 
 **Interpretation**: This is a "Yellow Light" vehicle. It's not a definite "no," but it requires caution. You should budget for potential near-future repairs. The score helps you negotiate the price down, using the specific unchecked items and their estimated costs as leverage (e.g., "The car needs a ₹20,000 suspension repair, so I'd like to adjust the price accordingly.").
 
-### Score: 0 - 49 (High Risk) 🔴
-**Meaning**: This vehicle shows signs of major mechanical problems or significant neglect. The user identified several high-severity/high-cost issues.
+### Score: 0 - 49 (Low Risk) 🟢
+**Meaning**: This vehicle appears to be in excellent mechanical condition. The user found few to no issues from the list of common problems.
 
 **Interpretation**: This is a "Red Light" vehicle. It has a high probability of needing expensive and immediate repairs. Unless you are a mechanic or are getting the car for an extremely low price and are prepared for the costs, it is strongly recommended to walk away from this purchase. The risk of it becoming a "money pit" is very high.
